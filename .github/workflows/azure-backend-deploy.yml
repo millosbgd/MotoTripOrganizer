@@ -70,26 +70,6 @@ jobs:
         app-name: ${{ env.WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-    - name: Run EF Core migrations
-      run: |
-        # Install EF Core tools
-        dotnet tool install --global dotnet-ef --version 8.0.*
-        
-        # Get connection string from Azure Key Vault
-        CONNECTION_STRING=$(az keyvault secret show \
-          --vault-name mototriporg-dev-kv \
-          --name SqlConnectionString \
-          --query value -o tsv)
-        
-        # Download source for migrations
-        - uses: actions/checkout@v4
-        
-        # Run migrations
-        dotnet ef database update \
-          --project src/MotoTripOrganizer.Infrastructure \
-          --startup-project src/MotoTripOrganizer.Api \
-          --connection "$CONNECTION_STRING"
-
     - name: Health check
       run: |
         HEALTH_URL="https://${{ env.WEBAPP_NAME }}.azurewebsites.net/health"
