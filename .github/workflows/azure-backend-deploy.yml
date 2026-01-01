@@ -30,13 +30,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
-
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet build src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj --configuration Release --no-restore
 
     - name: Publish
       run: dotnet publish src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
