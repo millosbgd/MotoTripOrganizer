@@ -1,0 +1,155 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  AZURE_WEBAPP_PACKAGE_PATH: './publish'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+
+    - name: Publish
+      run: dotnet publish src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: ${{ steps.deploy.outputs.webapp-url }}
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS_DEV }}
+
+    - name: Deploy to Azure Web App
+      id: deploy
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: mototriporg-dev-api
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Run EF Core migrations
+      run: |
+        # Install EF Core tools
+        dotnet tool install --global dotnet-ef
+        
+        # Get connection string from Azure
+        CONNECTION_STRING=$(az webapp config connection-string list \
+          --name mototriporg-dev-api \
+          --resource-group mototriporg-dev-rg \
+          --query "[?name=='DefaultConnection'].value" -o tsv)
+        
+        # Run migrations
+        dotnet ef database update \
+          --project src/MotoTripOrganizer.Infrastructure \
+          --startup-project src/MotoTripOrganizer.Api \
+          --connection "$CONNECTION_STRING"
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: ${{ steps.deploy.outputs.webapp-url }}
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+    - name: Deploy to Azure Web App
+      id: deploy
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: mototriporg-prod-api
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        
+    - name: Run EF Core migrations
+      run: |
+        dotnet tool install --global dotnet-ef
+        
+        CONNECTION_STRING=$(az webapp config connection-string list \
+          --name mototriporg-prod-api \
+          --resource-group mototriporg-prod-rg \
+          --query "[?name=='DefaultConnection'].value" -o tsv)
+        
+        dotnet ef database update \
+          --project src/MotoTripOrganizer.Infrastructure \
+          --startup-project src/MotoTripOrganizer.Api \
+          --connection "$CONNECTION_STRING"
+
+    - name: Health check
+      run: |
+        HEALTH_URL="https://mototriporg-prod-api.azurewebsites.net/health"
+        echo "Checking health at $HEALTH_URL"
+        
+        for i in {1..5}; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
+          if [ $STATUS -eq 200 ]; then
+            echo "✅ Health check passed!"
+            exit 0
+          fi
+          echo "Attempt $i: Status $STATUS, retrying..."
+          sleep 10
+        done
+        
+        echo "❌ Health check failed after 5 attempts"
+        exit 1

@@ -1,0 +1,112 @@
+name: Deploy Backend to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'infrastructure/**'
+      - '.github/workflows/azure-backend-deploy.yml'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  AZURE_WEBAPP_PACKAGE_PATH: './publish'
+  RESOURCE_GROUP: 'rg-mototriporganizer-dev'
+  WEBAPP_NAME: 'mototriporg-dev-api'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+
+    - name: Publish
+      run: dotnet publish src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: ${{ steps.deploy.outputs.webapp-url }}
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Deploy to Azure Web App
+      id: deploy
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.WEBAPP_NAME }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Run EF Core migrations
+      run: |
+        # Install EF Core tools
+        dotnet tool install --global dotnet-ef --version 8.0.*
+        
+        # Get connection string from Azure Key Vault
+        CONNECTION_STRING=$(az keyvault secret show \
+          --vault-name mototriporg-dev-kv \
+          --name SqlConnectionString \
+          --query value -o tsv)
+        
+        # Download source for migrations
+        - uses: actions/checkout@v4
+        
+        # Run migrations
+        dotnet ef database update \
+          --project src/MotoTripOrganizer.Infrastructure \
+          --startup-project src/MotoTripOrganizer.Api \
+          --connection "$CONNECTION_STRING"
+
+    - name: Health check
+      run: |
+        HEALTH_URL="https://${{ env.WEBAPP_NAME }}.azurewebsites.net/health"
+        echo "Checking health at $HEALTH_URL"
+        
+        for i in {1..5}; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
+          if [ $STATUS -eq 200 ]; then
+            echo "✅ Health check passed!"
+            exit 0
+          fi
+          echo "Attempt $i: Status $STATUS, retrying..."
+          sleep 10
+        done
+        
+        echo "❌ Health check failed after 5 attempts"
+        exit 1

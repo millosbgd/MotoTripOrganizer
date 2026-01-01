@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "prod"
+    },
+    "location": {
+      "value": "westeurope"
+    },
+    "baseName": {
+      "value": "mototriporg"
+    },
+    "sqlAdminLogin": {
+      "value": "sqladmin"
+    },
+    "sqlAdminPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/{subscription-id}/resourceGroups/{rg-name}/providers/Microsoft.KeyVault/vaults/{kv-name}"
+        },
+        "secretName": "SqlAdminPassword"
+      }
+    },
+    "auth0Domain": {
+      "value": "your-tenant.auth0.com"
+    },
+    "auth0Audience": {
+      "value": "https://api.mototriporganizer.com"
+    },
+    "keyVaultAdminObjectId": {
+      "value": "YOUR_AZURE_AD_OBJECT_ID"
+    }
+  }
+}

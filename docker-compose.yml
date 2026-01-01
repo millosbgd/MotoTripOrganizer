@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # SQL Server for local development
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mototriporganizer-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - mototriporganizer-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "YourStrong@Passw0rd" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: src/MotoTripOrganizer.Api/Dockerfile
+    container_name: mototriporganizer-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sql-server,1433;Database=MotoTripOrganizer;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Auth0__Authority=https://your-tenant.auth0.com/
+      - Auth0__Audience=https://api.mototriporganizer.com
+      - AzureStorage__ConnectionString=UseDevelopmentStorage=true
+    ports:
+      - "5000:8080"
+    depends_on:
+      sql-server:
+        condition: service_healthy
+    networks:
+      - mototriporganizer-network
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  sqlserver-data:
+    driver: local
+
+networks:
+  mototriporganizer-network:
+    driver: bridge
