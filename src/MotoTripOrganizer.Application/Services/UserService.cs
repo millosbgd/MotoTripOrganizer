@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MotoTripOrganizer.Application.DTOs;
 using MotoTripOrganizer.Domain.Entities;
-using MotoTripOrganizer.Infrastructure.Auth;
-using MotoTripOrganizer.Infrastructure.Data;
-using MotoTripOrganizer.Infrastructure.Repositories;
+using MotoTripOrganizer.Domain.Interfaces;
 
 namespace MotoTripOrganizer.Application.Services;
 

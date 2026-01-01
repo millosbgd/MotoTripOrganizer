@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Auth0__Domain",
+    "value": "dev-gp57sox40kt34si8.us.auth0.com",
+    "slotSetting": false
+  },
+  {
+    "name": "Auth0__Audience",
+    "value": "https://api.mototriporganizer.com",
+    "slotSetting": false
+  },
+  {
+    "name": "ASPNETCORE_ENVIRONMENT",
+    "value": "Development",
+    "slotSetting": false
+  }
+]

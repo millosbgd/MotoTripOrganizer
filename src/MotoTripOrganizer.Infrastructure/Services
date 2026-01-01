@@ -1,0 +1,75 @@
+using Microsoft.EntityFrameworkCore;
+using MotoTripOrganizer.Domain.Enums;
+using MotoTripOrganizer.Domain.Exceptions;
+using MotoTripOrganizer.Domain.Interfaces;
+
+namespace MotoTripOrganizer.Application.Services;
+
+public interface ITripAuthorizationService
+{
+    Task<bool> IsTripMemberAsync(int tripId, int userId, CancellationToken cancellationToken = default);
+    Task<TripMemberRole?> GetUserRoleAsync(int tripId, int userId, CancellationToken cancellationToken = default);
+    Task EnsureTripAccessAsync(int tripId, int userId, CancellationToken cancellationToken = default);
+    Task EnsureTripAccessAsync(int tripId, CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// CRITICAL: This service enforces the "Trip is sacred" principle.
+/// Every trip-scoped operation MUST call EnsureTripAccessAsync to verify membership.
+/// If the user is not a member of the trip, a TripAccessDeniedException is thrown (403).
+/// </summary>
+public class TripAuthorizationService : ITripAuthorizationService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+
+    public TripAuthorizationService(ApplicationDbContext context, ICurrentUserService currentUserService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<bool> IsTripMemberAsync(int tripId, int userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TripMembers
+            .AnyAsync(tm => tm.TripId == tripId && tm.UserId == userId, cancellationToken);
+    }
+
+    public async Task<TripMemberRole?> GetUserRoleAsync(int tripId, int userId, CancellationToken cancellationToken = default)
+    {
+        var member = await _context.TripMembers
+            .Where(tm => tm.TripId == tripId && tm.UserId == userId)
+            .Select(tm => tm.Role)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return member == default ? null : member;
+    }
+
+    /// <summary>
+    /// Verifies that the specified user is a member of the trip.
+    /// Throws TripAccessDeniedException if not a member.
+    /// </summary>
+    public async Task EnsureTripAccessAsync(int tripId, int userId, CancellationToken cancellationToken = default)
+    {
+        var isMember = await IsTripMemberAsync(tripId, userId, cancellationToken);
+        
+        if (!isMember)
+        {
+            throw new TripAccessDeniedException(tripId, userId.ToString());
+        }
+    }
+
+    /// <summary>
+    /// Verifies that the current authenticated user is a member of the trip.
+    /// Throws TripAccessDeniedException if not a member.
+    /// </summary>
+    public async Task EnsureTripAccessAsync(int tripId, CancellationToken cancellationToken = default)
+    {
+        if (!_currentUserService.UserId.HasValue)
+        {
+            throw new TripAccessDeniedException("User is not authenticated or not bootstrapped");
+        }
+
+        await EnsureTripAccessAsync(tripId, _currentUserService.UserId.Value, cancellationToken);
+    }
+}

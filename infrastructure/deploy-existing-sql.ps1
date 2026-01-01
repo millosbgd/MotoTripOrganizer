@@ -43,7 +43,7 @@ Write-Host "🏗️  Deploying infrastructure..." -ForegroundColor Green
 az deployment group create `
     --name $deploymentName `
     --resource-group $resourceGroup `
-    --template-file infrastructure/main-existing-sql.bicep `
+    --template-file main-existing-sql.bicep `
     --parameters environment=$environment `
     --parameters baseName=mototriporg `
     --parameters existingSqlServerName=motomanager `
