@@ -69,8 +69,12 @@ jobs:
 
     - name: Health check
       run: |
-        HEALTH_URL="https://${{ env.WEBAPP_NAME }}.azurewebsites.net/health"
+        # Get the actual webapp URL
+        WEBAPP_URL=$(az webapp show --name ${{ env.WEBAPP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --query defaultHostName -o tsv)
+        HEALTH_URL="https://${WEBAPP_URL}/health"
         echo "Checking health at $HEALTH_URL"
+        
+        sleep 15  # Give the app time to start
         
         for i in {1..5}; do
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
