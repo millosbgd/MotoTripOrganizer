@@ -1,0 +1,54 @@
+<step title="BackgroundTrace" date="2026-01-02T00:42:49.835" instance="a6e48b" url="/api/publish" method="POST" >
+  <step title="Updating shutdown sentinel last write time" date="2026-01-02T00:42:49.835" SemaphoreCount="7" /><!-- duration: 16ms -->
+  <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; acquired" date="2026-01-02T00:42:49.850" /><!-- duration: 16ms -->
+  <step title="Creating temporary deployment" date="2026-01-02T00:42:49.866" /><!-- duration: 63ms -->
+  <step title="Performing fetch based deployment" date="2026-01-02T00:42:49.944" >
+    <step title="Fetching changes." date="2026-01-02T00:42:50.022" /><!-- duration: 16ms -->
+    <step title="Starting LocalZipHandler" date="2026-01-02T00:42:50.054" /><!-- duration: 0ms -->
+    <step title="Cleaning up temp folders from previous zip deployments and extracting pushed zip file C:\local\Temp\zipdeploy\zp2q3a1a.zip (100.60 MB) to C:\local\Temp\zipdeploy\extracted" date="2026-01-02T00:42:50.100" /><!-- duration: 16ms -->
+    <step title="Cleaning up temp folders from previous zip deployments and extracting pushed zip file C:\local\Temp\zipdeploy\zp2q3a1a.zip (100.60 MB) to C:\local\Temp\zipdeploy\extracted" date="2026-01-02T00:42:50.116" >
+      <step title="Extracting 26670 entries to C:\local\Temp\zipdeploy\extracted directory" date="2026-01-02T00:42:50.304" >
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\.next\export-marker.json ..." date="2026-01-02T00:42:50.319" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\.next\build-manifest.json ..." date="2026-01-02T00:42:50.335" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\.next\types\app\dashboard\layout.ts ..." date="2026-01-02T00:42:50.350" /><!-- duration: 0ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\.next\types\app\dashboard\trips\[id]\page.ts ..." date="2026-01-02T00:42:50.366" /><!-- duration: 0ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\.next\types\app\dashboard\page.ts ..." date="2026-01-02T00:42:50.382" /><!-- duration: 0ms -->
+        <step title="Omitting extracting file traces ..." date="2026-01-02T00:42:50.397" /><!-- duration: 0ms -->
+      </step><!-- duration: 14203ms -->
+    </step><!-- duration: 14406ms -->
+    <step title="There is not enough space on the disk.
+ DEPLOYMENTINFO: deploymentPath = OneDeploy, deployer = OneDeploy, os = windows, sku = Free, siteName = mototriporg-dev-web, siteHostName = mototriporg-dev-web.azurewebsites.net, deploymentStatus = Error" date="2026-01-02T00:43:04.523" /><!-- duration: 16ms -->
+  </step><!-- duration: 14656ms -->
+  <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; released" date="2026-01-02T00:43:04.663" /><!-- duration: 0ms -->
+  <step title="Deleting shutdown sentinel file" date="2026-01-02T00:43:04.679" SemaphoreCount="8" /><!-- duration: 0ms -->
+  <step title="Error occurred" date="2026-01-02T00:43:04.710" type="error" text="One or more errors occurred." stackTrace="   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task.Wait(Int32 millisecondsTimeout, CancellationToken cancellationToken)
+   at Kudu.Core.Deployment.FetchDeploymentManager.&lt;&gt;c__DisplayClass12_1.&lt;PerformBackgroundDeployment&gt;b__3()
+   at Kudu.Contracts.Infrastructure.LockExtensions.TryLockOperation(IOperationLock lockObj, Action operation, String operationName, TimeSpan timeout)
+   at Kudu.Contracts.Infrastructure.LockExtensions.LockOperation(IOperationLock lockObj, Action operation, String operationName, TimeSpan timeout)
+   at Kudu.Core.Deployment.FetchDeploymentManager.&lt;&gt;c__DisplayClass12_0.&lt;PerformBackgroundDeployment&gt;b__1()" innerText="There is not enough space on the disk.
+" innerStackTrace="   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   at System.IO.FileStream.Init(String path, FileMode mode, FileAccess access, Int32 rights, Boolean useRights, FileShare share, Int32 bufferSize, FileOptions options, SECURITY_ATTRIBUTES secAttrs, String msgPath, Boolean bFromProxy, Boolean useLongPath, Boolean checkHost)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+   at System.IO.FileInfo.Open(FileMode mode, FileAccess access)
+   at System.IO.Abstractions.FileInfoWrapper.Open(FileMode mode, FileAccess access)
+   at Kudu.Core.Infrastructure.ZipArchiveExtensions.Extract(ZipArchive archive, String directoryName, ITracer tracer, Boolean doNotPreserveFileTime)
+   at Kudu.Services.Deployment.PushDeploymentController.&lt;&gt;c__DisplayClass23_0.&lt;LocalZipFetch&gt;b__1() in C:\__w\1\s\Kudu.Services\Deployment\PushDeploymentController.cs:line 904
+   at System.Threading.Tasks.Task.InnerInvoke()
+   at System.Threading.Tasks.Task.Execute()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Kudu.Services.Deployment.PushDeploymentController.&lt;LocalZipFetch&gt;d__23.MoveNext() in C:\__w\1\s\Kudu.Services\Deployment\PushDeploymentController.cs:line 908
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Kudu.Services.Deployment.PushDeploymentController.&lt;LocalZipHandler&gt;d__18.MoveNext() in C:\__w\1\s\Kudu.Services\Deployment\PushDeploymentController.cs:line 676
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Kudu.Core.Deployment.FetchDeploymentManager.&lt;PerformDeployment&gt;d__9.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at Kudu.Core.Deployment.FetchDeploymentManager.&lt;PerformDeployment&gt;d__9.MoveNext()" /><!-- duration: 0ms -->
+</step><!-- duration: 14891ms -->
