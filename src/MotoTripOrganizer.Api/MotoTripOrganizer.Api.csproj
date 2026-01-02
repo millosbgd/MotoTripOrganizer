@@ -26,10 +26,4 @@
     <ProjectReference Include="..\MotoTripOrganizer.Infrastructure\MotoTripOrganizer.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="web.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>
