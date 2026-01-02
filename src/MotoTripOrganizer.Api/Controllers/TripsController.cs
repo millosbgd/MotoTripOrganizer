@@ -7,7 +7,8 @@ using MotoTripOrganizer.Infrastructure.Data;
 
 namespace MotoTripOrganizer.Api.Controllers;
 
-[Authorize]
+// TODO: Re-enable authorization after frontend token handling is implemented
+// [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TripsController : ControllerBase
