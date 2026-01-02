@@ -8,10 +8,15 @@ public class Trip
 {
     public int Id { get; set; }
     public int OwnerUserId { get; set; }
+    public int UserId { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    public decimal TotalDistance { get; set; }
+    public string Status { get; set; } = "Planning";
     public string BaseCurrency { get; set; } = "EUR";
+    public DateTime CreatedAt { get; set; }
 
     // Navigation properties
     public User Owner { get; set; } = null!;

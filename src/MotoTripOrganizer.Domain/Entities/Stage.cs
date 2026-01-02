@@ -9,11 +9,16 @@ public class Stage
 {
     public int Id { get; set; }
     public int TripId { get; set; }
+    public int DayNumber { get; set; }
     public DateTime Date { get; set; }
     public string StartText { get; set; } = string.Empty;
     public string EndText { get; set; } = string.Empty;
+    public string StartLocation { get; set; } = string.Empty;
+    public string EndLocation { get; set; } = string.Empty;
     public int? PlannedKm { get; set; }
+    public decimal Distance { get; set; }
     public string? Notes { get; set; }
+    public string Description { get; set; } = string.Empty;
     
     public int CreatedByUserId { get; set; }
     public int? UpdatedByUserId { get; set; }

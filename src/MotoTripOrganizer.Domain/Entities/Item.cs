@@ -13,6 +13,11 @@ public class Item
     public int? StageId { get; set; }
     public ItemType Type { get; set; }
     public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public int Quantity { get; set; } = 1;
+    public bool IsPacked { get; set; }
+    public string Notes { get; set; } = string.Empty;
     public string? Body { get; set; }
     public string? Url { get; set; }
     public string? LocationJson { get; set; }

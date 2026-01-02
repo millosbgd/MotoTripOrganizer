@@ -39,4 +39,15 @@ public class CurrentUserService : ICurrentUserService
     }
 
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
+    
+    public string? GetCurrentUserId() => Auth0Subject;
+    
+    public string GetCurrentUserIdOrThrow() => Auth0Subject ?? throw new UnauthorizedAccessException("User not authenticated");
+    
+    public string? GetAuth0UserId() => Auth0Subject;
+    
+    public string? GetEmail() => _httpContextAccessor.HttpContext?.User
+        ?.FindFirst(ClaimTypes.Email)?.Value;
+    
+    public int? GetUserId() => UserId;
 }
