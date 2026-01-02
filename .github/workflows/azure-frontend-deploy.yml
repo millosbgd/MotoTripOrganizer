@@ -46,10 +46,18 @@ jobs:
         AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
         NEXT_PUBLIC_API_URL: 'https://mototriporg-dev-api-cjf6c5a9dhfyf4h8.westeurope-01.azurewebsites.net'
 
-    - name: Create deployment package
+    - name: Prepare standalone deployment
       run: |
         cd frontend
-        zip -r ../frontend-deploy.zip .next node_modules package.json package-lock.json next.config.js public
+        mkdir -p deploy
+        cp -r .next/standalone/* deploy/
+        cp -r .next/static deploy/.next/static
+        cp -r public deploy/public
+
+    - name: Create deployment package
+      run: |
+        cd frontend/deploy
+        zip -r ../../frontend-deploy.zip .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -78,6 +86,10 @@ jobs:
       with:
         app-name: ${{ env.WEBAPP_NAME }}
         package: frontend-deploy.zip
+        
+    - name: Configure startup command
+      run: |
+        az webapp config set --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.WEBAPP_NAME }} --startup-file "node server.js"
 
     - name: Health check
       run: |
