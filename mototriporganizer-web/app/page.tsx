@@ -67,12 +67,20 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-                <a
-                  href="/api/auth/logout"
-                  className="inline-flex items-center justify-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                >
-                  Logout
-                </a>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href="/trips"
+                    className="inline-flex items-center justify-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                  >
+                    🏍️ Moji Trip-ovi
+                  </a>
+                  <a
+                    href="/api/auth/logout"
+                    className="inline-flex items-center justify-center rounded-md border border-zinc-300 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    Logout
+                  </a>
+                </div>
               </div>
             ) : (
               <a
