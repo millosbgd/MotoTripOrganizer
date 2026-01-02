@@ -71,7 +71,9 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:3000",
                 "https://*.azurestaticapps.net",
-                "https://mototriporg-dev-web.azurewebsites.net")
+                "https://mototriporg-dev-web.azurewebsites.net",
+                "https://mototriporganizer-web.vercel.app",
+                "https://*.vercel.app")
               .SetIsOriginAllowedToAllowWildcardSubdomains()
               .AllowAnyHeader()
               .AllowAnyMethod()
