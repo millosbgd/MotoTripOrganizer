@@ -34,6 +34,8 @@ jobs:
         dotnet restore src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj
         dotnet build src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj --configuration Release --no-restore
         dotnet publish src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        # Verify EF Core DLLs are present
+        ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/*EntityFrameworkCore* || echo "WARNING: EF Core DLLs not found!"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
