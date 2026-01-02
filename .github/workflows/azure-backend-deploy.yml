@@ -84,17 +84,18 @@ jobs:
         HEALTH_URL="https://${WEBAPP_URL}/health"
         echo "Checking health at $HEALTH_URL"
         
-        sleep 15  # Give the app time to start
+        # Wait longer for app to start after deployment
+        sleep 30
         
-        for i in {1..5}; do
+        for i in {1..10}; do
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
           if [ $STATUS -eq 200 ]; then
             echo "✅ Health check passed!"
             exit 0
           fi
           echo "Attempt $i: Status $STATUS, retrying..."
-          sleep 10
+          sleep 15
         done
         
-        echo "❌ Health check failed after 5 attempts"
+        echo "❌ Health check failed after 10 attempts"
         exit 1
