@@ -36,17 +36,12 @@ jobs:
         dotnet publish src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
         # Verify EF Core DLLs are present
         ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/*EntityFrameworkCore* || echo "WARNING: EF Core DLLs not found!"
-        # Create tar.gz for artifact to preserve all files
-        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        tar -czf ../webapp.tar.gz .
-        cd ..
-        ls -lh webapp.tar.gz
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: webapp
-        path: webapp.tar.gz
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
   deploy:
     needs: build
@@ -57,12 +52,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: webapp
-        
-    - name: Extract artifact
-      run: |
-        mkdir -p ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        tar -xzf webapp.tar.gz -C ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     - name: Login to Azure
       uses: azure/login@v1
