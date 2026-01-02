@@ -50,6 +50,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+// ===== Controllers =====
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
 // ===== Health Checks =====
 builder.Services.AddHealthChecks()
     .AddSqlServer(
@@ -62,7 +66,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://*.azurestaticapps.net")
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "https://*.azurestaticapps.net",
+                "https://mototriporg-dev-web.azurewebsites.net")
               .SetIsOriginAllowedToAllowWildcardSubdomains()
               .AllowAnyHeader()
               .AllowAnyMethod()
@@ -88,6 +95,9 @@ app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Map Controllers
+app.MapControllers();
 
 // Minimal endpoints
 app.MapGet("/health", () => Results.Ok(new { 

@@ -1,0 +1,52 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoTripOrganizer.Api", "src\MotoTripOrganizer.Api\MotoTripOrganizer.Api.csproj", "{A6D5272C-1736-1DA2-2465-9BB872214BD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoTripOrganizer.Domain", "src\MotoTripOrganizer.Domain\MotoTripOrganizer.Domain.csproj", "{4885427B-9BAB-4FE7-2667-D3390D5B7E41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoTripOrganizer.Infrastructure", "src\MotoTripOrganizer.Infrastructure\MotoTripOrganizer.Infrastructure.csproj", "{FCAF5939-1041-018F-43C6-EA35B0B79B00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotoTripOrganizer.Tests", "tests\MotoTripOrganizer.Tests\MotoTripOrganizer.Tests.csproj", "{1F7AEA67-535E-1D3A-1468-00E0546A0EBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6D5272C-1736-1DA2-2465-9BB872214BD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6D5272C-1736-1DA2-2465-9BB872214BD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6D5272C-1736-1DA2-2465-9BB872214BD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6D5272C-1736-1DA2-2465-9BB872214BD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4885427B-9BAB-4FE7-2667-D3390D5B7E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4885427B-9BAB-4FE7-2667-D3390D5B7E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4885427B-9BAB-4FE7-2667-D3390D5B7E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4885427B-9BAB-4FE7-2667-D3390D5B7E41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCAF5939-1041-018F-43C6-EA35B0B79B00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCAF5939-1041-018F-43C6-EA35B0B79B00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCAF5939-1041-018F-43C6-EA35B0B79B00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCAF5939-1041-018F-43C6-EA35B0B79B00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F7AEA67-535E-1D3A-1468-00E0546A0EBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F7AEA67-535E-1D3A-1468-00E0546A0EBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F7AEA67-535E-1D3A-1468-00E0546A0EBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F7AEA67-535E-1D3A-1468-00E0546A0EBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A6D5272C-1736-1DA2-2465-9BB872214BD0} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{4885427B-9BAB-4FE7-2667-D3390D5B7E41} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{FCAF5939-1041-018F-43C6-EA35B0B79B00} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{1F7AEA67-535E-1D3A-1468-00E0546A0EBE} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2489B4DE-8A4A-4CC8-8D8D-DFE77E4860EA}
+	EndGlobalSection
+EndGlobal
