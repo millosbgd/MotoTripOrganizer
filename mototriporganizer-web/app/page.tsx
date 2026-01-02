@@ -22,10 +22,3 @@ export default function Home() {
     </div>
   );
 }
-            </p>
-          )}
-        </div>
-      </main>
-    </div>
-  );
-}
