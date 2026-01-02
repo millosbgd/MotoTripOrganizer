@@ -1,14 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using MotoTripOrganizer.Domain.Interfaces;
 
 namespace MotoTripOrganizer.Infrastructure.Auth;
-
-public interface ICurrentUserService
-{
-    string? Auth0Subject { get; }
-    int? UserId { get; }
-    bool IsAuthenticated { get; }
-}
 
 /// <summary>
 /// Service to retrieve the current authenticated user's information from JWT claims.

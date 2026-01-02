@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MotoTripOrganizer.Domain.Interfaces;
 using MotoTripOrganizer.Infrastructure.Auth;
 using MotoTripOrganizer.Infrastructure.Data;
 using Serilog;
