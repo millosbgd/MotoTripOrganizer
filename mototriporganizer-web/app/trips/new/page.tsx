@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, CreateTripDto } from '@/lib/api';
+import { api, CreateTripDto, Trip } from '@/lib/api';
 
 export default function NewTripPage() {
   const router = useRouter();
