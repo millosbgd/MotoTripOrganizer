@@ -1,21 +1,30 @@
-import { initAuth0 } from '@auth0/nextjs-auth0';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
-const auth0 = initAuth0();
+const SECRET = new TextEncoder().encode(process.env.AUTH0_SECRET);
 
 export async function GET() {
-  const session = await auth0.getSession();
-  
-  if (!session || !session.user) {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('appSession');
+    
+    if (!sessionCookie) {
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    const { payload } = await jwtVerify(sessionCookie.value, SECRET);
+    const user = payload.user as any;
+
+    return NextResponse.json({ 
+      user: {
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        sub: user.sub
+      }
+    });
+  } catch (error) {
     return NextResponse.json({ user: null }, { status: 401 });
   }
-
-  return NextResponse.json({ 
-    user: {
-      name: session.user.name,
-      email: session.user.email,
-      picture: session.user.picture,
-      sub: session.user.sub
-    }
-  });
 }
