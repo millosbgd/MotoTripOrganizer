@@ -39,7 +39,7 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasOne(i => i.Trip)
             .WithMany(t => t.Items)
             .HasForeignKey(i => i.TripId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne(i => i.Stage)
             .WithMany(s => s.Items)

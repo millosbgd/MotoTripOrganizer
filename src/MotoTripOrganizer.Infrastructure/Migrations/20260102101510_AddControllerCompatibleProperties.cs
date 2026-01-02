@@ -165,7 +165,7 @@ namespace MotoTripOrganizer.Infrastructure.Migrations
                         column: x => x.TripId,
                         principalTable: "Trips",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Expenses_Users_CreatedByUserId",
                         column: x => x.CreatedByUserId,
@@ -224,7 +224,7 @@ namespace MotoTripOrganizer.Infrastructure.Migrations
                         column: x => x.TripId,
                         principalTable: "Trips",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Items_Users_CreatedByUserId",
                         column: x => x.CreatedByUserId,

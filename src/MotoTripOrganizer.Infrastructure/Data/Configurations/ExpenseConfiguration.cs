@@ -38,7 +38,7 @@ public class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
         builder.HasOne(e => e.Trip)
             .WithMany(t => t.Expenses)
             .HasForeignKey(e => e.TripId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne(e => e.Stage)
             .WithMany(s => s.Expenses)

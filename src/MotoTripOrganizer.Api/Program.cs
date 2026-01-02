@@ -81,22 +81,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ===== Middleware Pipeline =====
-// Auto-migrate database on startup (development and production)
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    try
-    {
-        dbContext.Database.Migrate();
-        Log.Information("Database migration completed successfully");
-    }
-    catch (Exception ex)
-    {
-        Log.Error(ex, "Error running database migrations");
-        throw;
-    }
-}
-
 app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();

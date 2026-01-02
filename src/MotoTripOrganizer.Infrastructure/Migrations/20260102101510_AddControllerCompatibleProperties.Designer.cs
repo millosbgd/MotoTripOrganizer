@@ -12,7 +12,7 @@ using MotoTripOrganizer.Infrastructure.Data;
 namespace MotoTripOrganizer.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260102094502_AddControllerCompatibleProperties")]
+    [Migration("20260102101510_AddControllerCompatibleProperties")]
     partial class AddControllerCompatibleProperties
     {
         /// <inheritdoc />
