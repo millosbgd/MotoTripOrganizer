@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "AUTH0_SECRET": "0617675d443055879fe93dae1b450c9f224e74d6c73be79c237323e726b557e7",
+    "AUTH0_BASE_URL": "https://mototriporg-dev-web.azurewebsites.net",
+    "AUTH0_ISSUER_BASE_URL": "https://dev-gp57sox40kt34si8.us.auth0.com",
+    "AUTH0_CLIENT_ID": "KeP57L3qWSI3tF75HPvKqs3tdX3LcjTa",
+    "AUTH0_CLIENT_SECRET": "AMRpRGqbkXzWDZKTl0eO4SLegGlEj-WN3TwJSizZJIFnx-XxMJLmg3HnLuEHm-nt",
+    "AUTH0_AUDIENCE": "https://api.mototriporganizer.com",
+    "AUTH0_SCOPE": "openid profile email read:trips write:trips delete:trips",
+    "NEXT_PUBLIC_API_URL": "https://mototriporg-dev-api-cjf6c5a9dhfyf4h8.westeurope-01.azurewebsites.net",
+    "WEBSITE_NODE_DEFAULT_VERSION": "~20"
+  }
+}
