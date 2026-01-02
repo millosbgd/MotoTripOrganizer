@@ -1,6 +1,3 @@
-import { NextResponse } from 'next/server';
+import { handleAuth } from '@auth0/nextjs-auth0';
 
-export async function GET() {
-  // Placeholder for auth routes
-  return NextResponse.json({ message: 'Auth route - to be implemented' });
-}
+export const GET = handleAuth();
