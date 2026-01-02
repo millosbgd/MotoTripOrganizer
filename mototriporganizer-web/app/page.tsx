@@ -23,7 +23,7 @@ export default function Home() {
             {message}
           </p>
           <p className="text-sm text-zinc-500">
-            Running on Linux App Service with Next.js standalone mode
+            🎉 Deployed on Vercel - Next.js working perfectly!
           </p>
         </div>
       </main>
