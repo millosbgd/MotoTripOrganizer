@@ -14,7 +14,8 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithProperty("Application", "MotoTripOrganizer")
     .WriteTo.Console()
-    .WriteTo.File("logs/mototriporganizer-.log", rollingInterval: RollingInterval.Day)
+    // Disable file logging for Azure (no write permissions)
+    //.WriteTo.File("logs/mototriporganizer-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
