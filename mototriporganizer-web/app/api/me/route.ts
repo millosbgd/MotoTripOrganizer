@@ -1,8 +1,10 @@
-import { getSession } from '@auth0/nextjs-auth0/server';
+import { initAuth0 } from '@auth0/nextjs-auth0';
 import { NextResponse } from 'next/server';
 
+const auth0 = initAuth0();
+
 export async function GET() {
-  const session = await getSession();
+  const session = await auth0.getSession();
   
   if (!session || !session.user) {
     return NextResponse.json({ user: null }, { status: 401 });

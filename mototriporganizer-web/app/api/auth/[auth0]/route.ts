@@ -1,3 +1,5 @@
-import { handleAuth } from '@auth0/nextjs-auth0/server';
+import { initAuth0 } from '@auth0/nextjs-auth0';
 
-export const GET = handleAuth();
+const auth0 = initAuth0();
+
+export const GET = auth0.handleAuth();
