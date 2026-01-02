@@ -37,6 +37,8 @@ jobs:
           if [ -d "mototriporganizer-web/public" ]; then
             cp -r mototriporganizer-web/public deploy-package/
           fi
+          # Add minimal package.json for Azure detection
+          echo '{"name":"mototriporg-frontend","version":"1.0.0","scripts":{"start":"node server.js"},"engines":{"node":">=20.0.0"}}' > deploy-package/package.json
           
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
