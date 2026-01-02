@@ -17,7 +17,7 @@ env:
   WEBAPP_NAME: 'mototriporg-dev-api'
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -34,25 +34,9 @@ jobs:
         dotnet restore src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj
         dotnet build src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj --configuration Release --no-restore
         dotnet publish src/MotoTripOrganizer.Api/MotoTripOrganizer.Api.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        # Verify EF Core DLLs are present
-        ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/*EntityFrameworkCore* || echo "WARNING: EF Core DLLs not found!"
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: webapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: webapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        echo "✅ Build completed"
+        echo "Verifying EF Core DLLs..."
+        ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/*EntityFrameworkCore*
 
     - name: Login to Azure
       uses: azure/login@v1
@@ -63,28 +47,29 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y zip
         
     - name: Deploy to Azure Web App
-      id: deploy
       run: |
-        # Create zip from published files
+        echo "📦 Creating deployment package..."
         cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
         zip -r ../deploy.zip * .[^.]*
         cd ..
         
-        # Deploy using Azure CLI
+        echo "🚀 Deploying to Azure..."
         az webapp deployment source config-zip \
           --resource-group ${{ env.RESOURCE_GROUP }} \
           --name ${{ env.WEBAPP_NAME }} \
           --src deploy.zip \
           --timeout 600
+        
+        echo "✅ Deployment completed"
 
     - name: Health check
       run: |
-        # Get the actual webapp URL
         WEBAPP_URL=$(az webapp show --name ${{ env.WEBAPP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --query defaultHostName -o tsv)
         HEALTH_URL="https://${WEBAPP_URL}/health"
-        echo "Checking health at $HEALTH_URL"
+        echo "🏥 Checking health at $HEALTH_URL"
         
-        # Wait longer for app to start after deployment
+        # Wait for app to start after deployment
+        echo "Waiting 30 seconds for app startup..."
         sleep 30
         
         for i in {1..10}; do
@@ -93,7 +78,7 @@ jobs:
             echo "✅ Health check passed!"
             exit 0
           fi
-          echo "Attempt $i: Status $STATUS, retrying..."
+          echo "Attempt $i/10: Status $STATUS, retrying in 15s..."
           sleep 15
         done
         
