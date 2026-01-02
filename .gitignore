@@ -72,3 +72,8 @@ docker-compose.override.yml
 Thumbs.db
 backend-logs/
 backend-logs.zip
+
+# Deployment artifacts
+manual-deploy/
+manual-deploy.zip
+deploy.zip
