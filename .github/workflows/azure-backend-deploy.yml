@@ -58,6 +58,9 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Install zip utility
+      run: sudo apt-get update && sudo apt-get install -y zip
         
     - name: Deploy to Azure Web App
       id: deploy
