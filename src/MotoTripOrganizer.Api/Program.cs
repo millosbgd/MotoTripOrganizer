@@ -86,7 +86,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        await dbContext.Database.MigrateAsync();
+        dbContext.Database.Migrate();
         Log.Information("Database migration completed successfully");
     }
     catch (Exception ex)
