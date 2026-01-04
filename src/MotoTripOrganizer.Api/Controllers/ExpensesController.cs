@@ -81,10 +81,13 @@ public class ExpensesController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
-            var trip = await _context.Trips
-                .FirstOrDefaultAsync(t => t.Id == tripId && t.UserId == userId.Value);
+            // Check if user has access to this trip (owner or member)
+            var hasAccess = await _context.Trips
+                .Where(t => t.Id == tripId)
+                .AnyAsync(t => t.UserId == userId.Value || 
+                              t.Members.Any(m => m.UserId == userId.Value));
 
-            if (trip == null)
+            if (!hasAccess)
             {
                 return NotFound(new { message = "Trip not found" });
             }
