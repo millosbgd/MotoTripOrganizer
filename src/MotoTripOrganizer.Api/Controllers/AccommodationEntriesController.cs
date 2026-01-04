@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MotoTripOrganizer.Application.DTOs;
-using MotoTripOrganizer.Application.Interfaces;
 using MotoTripOrganizer.Domain.Entities;
+using MotoTripOrganizer.Domain.Interfaces;
 using MotoTripOrganizer.Infrastructure.Data;
 
 namespace MotoTripOrganizer.Api.Controllers;
