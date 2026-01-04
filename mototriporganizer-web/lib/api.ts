@@ -28,6 +28,7 @@ export interface Expense {
   description: string;
   amount: number;
   currency: string;
+  isShared: boolean;
 }
 
 export interface CreateExpenseDto {
@@ -36,6 +37,7 @@ export interface CreateExpenseDto {
   description: string;
   amount: number;
   currency?: string;
+  isShared: boolean;
 }
 
 export interface TripMember {

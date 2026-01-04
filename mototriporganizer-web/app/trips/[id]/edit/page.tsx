@@ -609,7 +609,10 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         {/* Floating Add Button - visible only on expense tabs */}
         {(activeTab === 'sharedExpenses' || activeTab === 'personalExpenses') && tripId && (
           <button
-            onClick={() => router.push(`/trips/${tripId}/expenses/new`)}
+            onClick={() => {
+              const isShared = activeTab === 'sharedExpenses';
+              router.push(`/trips/${tripId}/expenses/new?isShared=${isShared}`);
+            }}
             className="fixed bottom-24 right-8 w-14 h-14 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-2xl font-light"
           >
             +

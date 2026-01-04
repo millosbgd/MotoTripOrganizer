@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 
@@ -11,9 +11,11 @@ interface PageParams {
 
 export default function NewExpensePage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
+  const isShared = searchParams.get('isShared') === 'true';
 
   useState(() => {
     params.then(p => setTripId(p.id));
@@ -31,6 +33,7 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
       description: formData.get('description') as string,
       amount: parseFloat(formData.get('amount') as string),
       currency: formData.get('currency') as string || 'EUR',
+      isShared: isShared,
     };
 
     try {
