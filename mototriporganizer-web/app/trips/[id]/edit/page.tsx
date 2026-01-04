@@ -494,26 +494,9 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
           )}
 
           {activeTab === 'fuel' && (
-            <div className="p-6">
+            <div className="p-6 relative">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-black dark:text-white">Gorivo</h2>
-                <button
-                  onClick={() => {
-                    setEditingFuelId(null);
-                    setFuelFormData({
-                      date: new Date().toISOString().split('T')[0],
-                      quantity: '',
-                      amount: '',
-                      mileage: '',
-                      location: '',
-                      note: ''
-                    });
-                    setShowFuelForm(!showFuelForm);
-                  }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {showFuelForm ? 'Otkaži' : '+ Dodaj sipanje'}
-                </button>
               </div>
 
               {showFuelForm && (
@@ -684,10 +667,12 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                                 e.stopPropagation();
                                 handleDeleteFuel(fuel.id);
                               }}
-                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1"
+                              className="p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                               title="Obriši"
                             >
-                              🗑️
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
                             </button>
                           </td>
                         </tr>
@@ -696,6 +681,28 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   </table>
                 </div>
               )}
+
+              {/* Floating Action Button */}
+              <button
+                onClick={() => {
+                  setEditingFuelId(null);
+                  setFuelFormData({
+                    date: new Date().toISOString().split('T')[0],
+                    quantity: '',
+                    amount: '',
+                    mileage: '',
+                    location: '',
+                    note: ''
+                  });
+                  setShowFuelForm(true);
+                }}
+                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-10"
+                title="Dodaj sipanje"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
             </div>
           )}
 
