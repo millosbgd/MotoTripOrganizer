@@ -302,13 +302,13 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               
               {loadingExpenses ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Učitavam troškove...</p>
-              ) : expenses.length === 0 ? (
+              ) : expenses.filter(e => e.isShared).length === 0 ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Nema unetih troškova</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <tbody>
-                      {expenses.map((expense) => (
+                      {expenses.filter(e => e.isShared).map((expense) => (
                         <tr
                           key={expense.id}
                           className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
@@ -332,13 +332,13 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               
               {loadingExpenses ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Učitavam troškove...</p>
-              ) : expenses.length === 0 ? (
+              ) : expenses.filter(e => !e.isShared).length === 0 ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Nema unetih troškova</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <tbody>
-                      {expenses.map((expense) => (
+                      {expenses.filter(e => !e.isShared).map((expense) => (
                         <tr
                           key={expense.id}
                           className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
