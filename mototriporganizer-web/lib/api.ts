@@ -51,7 +51,38 @@ export interface AddMemberDto {
   email: string;
   role?: 'Editor' | 'Viewer';
 }
+export interface FuelEntry {
+  id: number;
+  tripId: number;
+  date: string;
+  quantity: number;
+  amount: number;
+  unitPrice: number;
+  mileage: number;
+  location: string;
+  note?: string;
+  createdByUserId: number;
+  createdAt: string;
+  updatedAt?: string;
+}
 
+export interface CreateFuelEntryDto {
+  date: string;
+  quantity: number;
+  amount: number;
+  mileage: number;
+  location: string;
+  note?: string;
+}
+
+export interface UpdateFuelEntryDto {
+  date: string;
+  quantity: number;
+  amount: number;
+  mileage: number;
+  location: string;
+  note?: string;
+}
 // Helper to get auth token
 async function getAuthToken(): Promise<string | null> {
   try {
@@ -254,6 +285,76 @@ export const api = {
 
     if (!response.ok) {
       throw new Error(`Failed to remove member: ${response.statusText}`);
+    }
+  },
+
+  // Get fuel entries
+  async getFuelEntries(tripId: number): Promise<FuelEntry[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/fuel-entries`, {
+      headers: await buildHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch fuel entries: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Get single fuel entry
+  async getFuelEntry(tripId: number, id: number): Promise<FuelEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/fuel-entries/${id}`, {
+      headers: await buildHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch fuel entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Create fuel entry
+  async createFuelEntry(tripId: number, data: CreateFuelEntryDto): Promise<FuelEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/fuel-entries`, {
+      method: 'POST',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create fuel entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Update fuel entry
+  async updateFuelEntry(tripId: number, id: number, data: UpdateFuelEntryDto): Promise<FuelEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/fuel-entries/${id}`, {
+      method: 'PUT',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update fuel entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Delete fuel entry
+  async deleteFuelEntry(tripId: number, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/fuel-entries/${id}`, {
+      method: 'DELETE',
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete fuel entry: ${response.statusText}`);
     }
   },
 };
