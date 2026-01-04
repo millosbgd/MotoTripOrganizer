@@ -169,7 +169,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               href="/trips"
               className="mt-4 inline-block text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
             >
-              ← Nazad na listu
+              ‹ Nazad na listu
             </Link>
           </div>
         </div>
@@ -186,7 +186,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
             href="/trips"
             className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
           >
-            ←
+            ‹
           </Link>
           <h1 className="text-lg font-semibold text-black dark:text-white">{trip.name}</h1>
         </div>

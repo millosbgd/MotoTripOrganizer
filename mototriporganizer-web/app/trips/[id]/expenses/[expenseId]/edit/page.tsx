@@ -112,7 +112,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
             href={`/trips/${tripId}/edit`}
             className="text-black dark:text-white hover:opacity-70 transition-opacity text-2xl"
           >
-            ←
+            ‹
           </Link>
           <h1 className="text-xl font-semibold text-black dark:text-white">Uredi trošak</h1>
           <button
