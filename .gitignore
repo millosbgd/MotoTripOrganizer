@@ -77,3 +77,4 @@ backend-logs.zip
 manual-deploy/
 manual-deploy.zip
 deploy.zip
+.vercel

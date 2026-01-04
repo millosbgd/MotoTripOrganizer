@@ -15,6 +15,7 @@ public class Expense
     public decimal Amount { get; set; }
     public string Currency { get; set; } = "EUR";
     public int PaidByUserId { get; set; }
+    public bool IsShared { get; set; }
     public string? Note { get; set; }
     
     public int CreatedByUserId { get; set; }

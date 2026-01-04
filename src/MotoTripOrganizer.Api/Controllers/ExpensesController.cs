@@ -56,7 +56,8 @@ public class ExpensesController : ControllerBase
                     Category = e.Category,
                     Description = e.Description,
                     Amount = e.Amount,
-                    Currency = e.Currency
+                    Currency = e.Currency,
+                    IsShared = e.IsShared
                 })
                 .ToListAsync();
 
@@ -97,6 +98,7 @@ public class ExpensesController : ControllerBase
                 Amount = dto.Amount,
                 Currency = dto.Currency,
                 PaidByUserId = userId.Value,
+                IsShared = dto.IsShared,
                 CreatedByUserId = userId.Value,
                 CreatedAt = DateTime.UtcNow
             };
@@ -113,7 +115,8 @@ public class ExpensesController : ControllerBase
                 Category = expense.Category,
                 Description = expense.Description,
                 Amount = expense.Amount,
-                Currency = expense.Currency
+                Currency = expense.Currency,
+                IsShared = expense.IsShared
             };
 
             return CreatedAtAction(nameof(GetExpense), new { tripId, id = expense.Id }, result);
@@ -152,7 +155,8 @@ public class ExpensesController : ControllerBase
                 Category = expense.Category,
                 Description = expense.Description,
                 Amount = expense.Amount,
-                Currency = expense.Currency
+                Currency = expense.Currency,
+                IsShared = expense.IsShared
             };
 
             return Ok(result);
@@ -189,6 +193,7 @@ public class ExpensesController : ControllerBase
             expense.Description = dto.Description;
             expense.Amount = dto.Amount;
             expense.Currency = dto.Currency;
+            expense.IsShared = dto.IsShared;
 
             await _context.SaveChangesAsync();
 
@@ -199,7 +204,8 @@ public class ExpensesController : ControllerBase
                 Category = expense.Category,
                 Description = expense.Description,
                 Amount = expense.Amount,
-                Currency = expense.Currency
+                Currency = expense.Currency,
+                IsShared = expense.IsShared
             };
 
             return Ok(result);
@@ -254,6 +260,7 @@ public record ExpenseDto
     public string Description { get; init; } = string.Empty;
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "EUR";
+    public bool IsShared { get; init; }
 }
 
 public record CreateExpenseDto
@@ -263,6 +270,7 @@ public record CreateExpenseDto
     public string Description { get; init; } = string.Empty;
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "EUR";
+    public bool IsShared { get; init; }
 }
 
 public record UpdateExpenseDto
@@ -272,4 +280,5 @@ public record UpdateExpenseDto
     public string Description { get; init; } = string.Empty;
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "EUR";
+    public bool IsShared { get; init; }
 }

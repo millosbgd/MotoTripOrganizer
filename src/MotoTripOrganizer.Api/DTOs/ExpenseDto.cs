@@ -9,6 +9,7 @@ public class ExpenseDto
     public decimal Amount { get; set; }
     public string Currency { get; set; } = string.Empty;
     public int PaidByUserId { get; set; }
+    public bool IsShared { get; set; }
     public string? Note { get; set; }
     public int CreatedByUserId { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -22,6 +23,7 @@ public class CreateExpenseRequest
     public decimal Amount { get; set; }
     public string Currency { get; set; } = "EUR";
     public int PaidByUserId { get; set; }
+    public bool IsShared { get; set; }
     public string? Note { get; set; }
 }
 
