@@ -584,23 +584,25 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                 </button>
               </>
             )}
-            {/* Members tab - always visible in both modes */}
-            <button
-              onClick={() => setActiveTab('members')}
-              title="Članovi"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'members'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </button>
+            {/* Members tab - visible only in edit mode (from edit icon) */}
+            {isEditMode && (
+              <button
+                onClick={() => setActiveTab('members')}
+                title="Članovi"
+                className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                  activeTab === 'members'
+                    ? 'border-black dark:border-white text-black dark:text-white'
+                    : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
