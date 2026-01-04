@@ -153,7 +153,7 @@ export default function TripsPage() {
                   <Link
                     href={`/trips/${trip.id}/edit?tab=general`}
                     onClick={(e) => e.stopPropagation()}
-                    className="p-2 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     title="Izmeni info"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +164,7 @@ export default function TripsPage() {
                   {/* Delete button */}
                   <button
                     onClick={(e) => handleDelete(e, trip.id)}
-                    className="p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     title="Obriši"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
