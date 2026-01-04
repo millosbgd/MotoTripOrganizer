@@ -60,6 +60,7 @@ public class FuelEntriesController : ControllerBase
                     Date = f.Date,
                     Quantity = f.Quantity,
                     Amount = f.Amount,
+                    Currency = f.Currency,
                     UnitPrice = f.UnitPrice,
                     Mileage = f.Mileage,
                     Location = f.Location,
@@ -156,6 +157,7 @@ public class FuelEntriesController : ControllerBase
                 Date = dto.Date,
                 Quantity = dto.Quantity,
                 Amount = dto.Amount,
+                Currency = dto.Currency,
                 UnitPrice = unitPrice,
                 Mileage = dto.Mileage,
                 Location = dto.Location,
@@ -174,6 +176,7 @@ public class FuelEntriesController : ControllerBase
                 Date = fuelEntry.Date,
                 Quantity = fuelEntry.Quantity,
                 Amount = fuelEntry.Amount,
+                Currency = fuelEntry.Currency,
                 UnitPrice = fuelEntry.UnitPrice,
                 Mileage = fuelEntry.Mileage,
                 Location = fuelEntry.Location,
@@ -219,6 +222,7 @@ public class FuelEntriesController : ControllerBase
             fuelEntry.Date = dto.Date;
             fuelEntry.Quantity = dto.Quantity;
             fuelEntry.Amount = dto.Amount;
+            fuelEntry.Currency = dto.Currency;
             fuelEntry.UnitPrice = unitPrice;
             fuelEntry.Mileage = dto.Mileage;
             fuelEntry.Location = dto.Location;
@@ -235,6 +239,7 @@ public class FuelEntriesController : ControllerBase
                 Date = fuelEntry.Date,
                 Quantity = fuelEntry.Quantity,
                 Amount = fuelEntry.Amount,
+                Currency = fuelEntry.Currency,
                 UnitPrice = fuelEntry.UnitPrice,
                 Mileage = fuelEntry.Mileage,
                 Location = fuelEntry.Location,

@@ -20,6 +20,11 @@ public class FuelEntryConfiguration : IEntityTypeConfiguration<FuelEntry>
             .IsRequired()
             .HasPrecision(18, 2);
 
+        builder.Property(f => f.Currency)
+            .IsRequired()
+            .HasMaxLength(3)
+            .HasDefaultValue("EUR");
+
         builder.Property(f => f.UnitPrice)
             .IsRequired()
             .HasPrecision(18, 3);

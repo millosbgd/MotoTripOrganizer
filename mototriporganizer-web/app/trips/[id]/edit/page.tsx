@@ -27,6 +27,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     date: new Date().toISOString().split('T')[0],
     quantity: '',
     amount: '',
+    currency: 'EUR',
     mileage: '',
     location: '',
     note: ''
@@ -153,6 +154,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         date: fuelFormData.date + 'T12:00:00Z',
         quantity: parseFloat(fuelFormData.quantity),
         amount: parseFloat(fuelFormData.amount),
+        currency: fuelFormData.currency,
         mileage: parseInt(fuelFormData.mileage),
         location: fuelFormData.location,
         note: fuelFormData.note || undefined
@@ -170,6 +172,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         date: new Date().toISOString().split('T')[0],
         quantity: '',
         amount: '',
+        currency: 'EUR',
         mileage: '',
         location: '',
         note: ''
@@ -186,6 +189,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       date: fuel.date.split('T')[0],
       quantity: fuel.quantity.toString(),
       amount: fuel.amount.toString(),
+      currency: fuel.currency,
       mileage: fuel.mileage.toString(),
       location: fuel.location,
       note: fuel.note || ''
@@ -563,6 +567,23 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Valuta
+                        </label>
+                        <select
+                          value={fuelFormData.currency}
+                          onChange={(e) => setFuelFormData({...fuelFormData, currency: e.target.value})}
+                          required
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        >
+                          <option value="EUR">EUR</option>
+                          <option value="RSD">RSD</option>
+                          <option value="USD">USD</option>
+                          <option value="BAM">BAM</option>
+                          <option value="HRK">HRK</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                           Kilometraža
                         </label>
                         <input
@@ -665,10 +686,10 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                             {fuel.quantity.toFixed(2)} L
                           </td>
                           <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
-                            {fuel.amount.toFixed(2)} EUR
+                            {fuel.amount.toFixed(2)} {fuel.currency}
                           </td>
                           <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
-                            {fuel.unitPrice.toFixed(2)}
+                            {fuel.unitPrice.toFixed(2)} {fuel.currency}
                           </td>
                           <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
                             {fuel.mileage.toLocaleString()} km
@@ -702,6 +723,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     date: new Date().toISOString().split('T')[0],
                     quantity: '',
                     amount: '',
+                    currency: 'EUR',
                     mileage: '',
                     location: '',
                     note: ''

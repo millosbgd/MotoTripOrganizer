@@ -57,6 +57,7 @@ export interface FuelEntry {
   date: string;
   quantity: number;
   amount: number;
+  currency: string;
   unitPrice: number;
   mileage: number;
   location: string;
@@ -70,6 +71,7 @@ export interface CreateFuelEntryDto {
   date: string;
   quantity: number;
   amount: number;
+  currency: string;
   mileage: number;
   location: string;
   note?: string;
@@ -79,6 +81,7 @@ export interface UpdateFuelEntryDto {
   date: string;
   quantity: number;
   amount: number;
+  currency: string;
   mileage: number;
   location: string;
   note?: string;

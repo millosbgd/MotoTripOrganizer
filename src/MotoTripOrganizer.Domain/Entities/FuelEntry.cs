@@ -20,6 +20,11 @@ public class FuelEntry
     public decimal Amount { get; set; }
     
     /// <summary>
+    /// Currency code (e.g., EUR, USD, RSD)
+    /// </summary>
+    public string Currency { get; set; } = "EUR";
+    
+    /// <summary>
     /// Unit price per liter (calculated: Amount / Quantity)
     /// </summary>
     public decimal UnitPrice { get; set; }
