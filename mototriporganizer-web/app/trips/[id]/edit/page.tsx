@@ -360,22 +360,47 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               ) : expenses.filter(e => !e.isShared).length === 0 ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Nema unetih troškova</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {expenses.filter(e => !e.isShared).map((expense) => (
-                        <tr
-                          key={expense.id}
-                          className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
-                          onClick={() => router.push(`/trips/${tripId}/expenses/${expense.id}/edit`)}
-                        >
-                          <td className="py-3 px-3 text-black dark:text-white">{expense.description || expense.category}</td>
-                          <td className="py-3 px-3 text-right text-black dark:text-white">{expense.amount.toFixed(2)}</td>
-                          <td className="py-3 px-3 text-center text-black dark:text-white">{expense.currency}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-6">
+                  {Object.entries(
+                    expenses
+                      .filter(e => !e.isShared)
+                      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                      .reduce((groups, expense) => {
+                        const date = new Date(expense.date).toLocaleDateString('sr-RS', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        });
+                        if (!groups[date]) {
+                          groups[date] = [];
+                        }
+                        groups[date].push(expense);
+                        return groups;
+                      }, {} as Record<string, typeof expenses>)
+                  ).map(([date, groupExpenses]) => (
+                    <div key={date}>
+                      <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2 px-3">
+                        {date}
+                      </h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <tbody>
+                            {groupExpenses.map((expense) => (
+                              <tr
+                                key={expense.id}
+                                className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                                onClick={() => router.push(`/trips/${tripId}/expenses/${expense.id}/edit`)}
+                              >
+                                <td className="py-3 px-3 text-black dark:text-white">{expense.description || expense.category}</td>
+                                <td className="py-3 px-3 text-right text-black dark:text-white">{expense.amount.toFixed(2)}</td>
+                                <td className="py-3 px-3 text-center text-black dark:text-white">{expense.currency}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
