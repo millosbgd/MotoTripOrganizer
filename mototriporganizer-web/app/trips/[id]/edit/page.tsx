@@ -20,12 +20,15 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [addingMember, setAddingMember] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members'>('general');
+  const [isEditMode, setIsEditMode] = useState(true); // true = from edit icon (show only Info & Members), false = from region click (show all except Info & Members)
 
   useEffect(() => {
     // Set initial tab from query param
     const tab = searchParams.get('tab') as typeof activeTab;
     if (tab) {
       setActiveTab(tab);
+      // Detect mode: if tab is 'general', user came from edit icon; otherwise from region click
+      setIsEditMode(tab === 'general');
     }
     
     params.then(p => {
@@ -468,111 +471,120 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 shadow-lg">
         <div className="max-w-4xl mx-auto px-2">
           <div className="flex overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('general')}
-              title="Opšti podaci"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'general'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => setActiveTab('sharedExpenses')}
-              title="Zajednički troškovi"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'sharedExpenses'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => setActiveTab('personalExpenses')}
-              title="Sopstveni troškovi"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'personalExpenses'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => setActiveTab('fuel')}
-              title="Gorivo"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'fuel'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 2h10v18H3z"/>
-                <path d="M13 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/>
-                <path d="M17 10h3"/>
-                <path d="M21 8v6"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => setActiveTab('accommodation')}
-              title="Smeštaj"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'accommodation'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => setActiveTab('service')}
-              title="Servis"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'service'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => setActiveTab('notes')}
-              title="Beleške"
-              className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                activeTab === 'notes'
-                  ? 'border-black dark:border-white text-black dark:text-white'
-                  : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <line x1="10" y1="9" x2="8" y2="9"/>
-              </svg>
-            </button>
+            {/* Info tab - visible only in edit mode (from edit icon) */}
+            {isEditMode && (
+              <button
+                onClick={() => setActiveTab('general')}
+                title="Opšti podaci"
+                className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                  activeTab === 'general'
+                    ? 'border-black dark:border-white text-black dark:text-white'
+                    : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              </button>
+            )}
+            {/* Expense tabs - visible only in view mode (from region click) */}
+            {!isEditMode && (
+              <>
+                <button
+                  onClick={() => setActiveTab('sharedExpenses')}
+                  title="Zajednički troškovi"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'sharedExpenses'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setActiveTab('personalExpenses')}
+                  title="Sopstveni troškovi"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'personalExpenses'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setActiveTab('fuel')}
+                  title="Gorivo"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'fuel'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 2h10v18H3z"/>
+                    <path d="M13 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/>
+                    <path d="M17 10h3"/>
+                    <path d="M21 8v6"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setActiveTab('accommodation')}
+                  title="Smeštaj"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'accommodation'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setActiveTab('service')}
+                  title="Servis"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'service'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setActiveTab('notes')}
+                  title="Beleške"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'notes'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <line x1="10" y1="9" x2="8" y2="9"/>
+                  </svg>
+                </button>
+              </>
+            )}
+            {/* Members tab - always visible in both modes */}
             <button
               onClick={() => setActiveTab('members')}
               title="Članovi"
