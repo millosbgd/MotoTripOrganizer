@@ -647,12 +647,16 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                         <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Iznos</th>
                         <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Cena/L</th>
                         <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Kilometraža</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Akcije</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {fuelEntries.map((fuel) => (
-                        <tr key={fuel.id} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                        <tr 
+                          key={fuel.id} 
+                          onClick={() => handleEditFuel(fuel)}
+                          className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
+                        >
                           <td className="py-3 px-4 text-sm text-black dark:text-white">
                             {new Date(fuel.date).toLocaleDateString('sr-RS')}
                           </td>
@@ -675,20 +679,16 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                             {fuel.mileage.toLocaleString()} km
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              <button
-                                onClick={() => handleEditFuel(fuel)}
-                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm"
-                              >
-                                Uredi
-                              </button>
-                              <button
-                                onClick={() => handleDeleteFuel(fuel.id)}
-                                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm"
-                              >
-                                Obriši
-                              </button>
-                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteFuel(fuel.id);
+                              }}
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1"
+                              title="Obriši"
+                            >
+                              🗑️
+                            </button>
                           </td>
                         </tr>
                       ))}
