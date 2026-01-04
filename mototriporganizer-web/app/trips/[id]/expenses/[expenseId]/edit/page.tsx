@@ -58,7 +58,9 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       setSaving(true);
       setError(null);
       await api.updateExpense(parseInt(tripId), parseInt(expenseId), updatedExpense);
-      router.push(`/trips/${tripId}/edit`);
+      // Redirect to appropriate tab based on expense type
+      const tab = expense?.isShared ? 'sharedExpenses' : 'personalExpenses';
+      router.push(`/trips/${tripId}/edit?tab=${tab}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update expense');
     } finally {
@@ -75,7 +77,9 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       setDeleting(true);
       setError(null);
       await api.deleteExpense(parseInt(tripId), parseInt(expenseId));
-      router.push(`/trips/${tripId}/edit`);
+      // Redirect to appropriate tab based on expense type
+      const tab = expense?.isShared ? 'sharedExpenses' : 'personalExpenses';
+      router.push(`/trips/${tripId}/edit?tab=${tab}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete expense');
     } finally {

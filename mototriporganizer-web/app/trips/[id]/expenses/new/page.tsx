@@ -40,7 +40,9 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
       setLoading(true);
       setError(null);
       await api.createExpense(parseInt(tripId), expense);
-      router.push(`/trips/${tripId}/edit`);
+      // Redirect to appropriate tab based on expense type
+      const tab = isShared ? 'sharedExpenses' : 'personalExpenses';
+      router.push(`/trips/${tripId}/edit?tab=${tab}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create expense');
     } finally {
