@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry } from '@/lib/api';
+import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry } from '@/lib/api';
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -46,6 +46,23 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     location: '',
     note: ''
   });
+
+  // Service state
+  const [serviceEntries, setServiceEntries] = useState<ServiceEntry[]>([]);
+  const [loadingService, setLoadingService] = useState(false);
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
+  const [serviceFormData, setServiceFormData] = useState({
+    serviceType: 'Podmazivanje lanca',
+    description: '',
+    serviceDate: new Date().toISOString().split('T')[0],
+    amount: '',
+    currency: 'EUR',
+    location: '',
+    mileage: '',
+    note: ''
+  });
+
   const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members'>('general');
   const [isEditMode, setIsEditMode] = useState(true); // true = from edit icon (show only Info & Members), false = from region click (show all except Info & Members)
 
@@ -66,6 +83,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         loadMembers(p.id);
         loadFuelEntries(p.id);
         loadAccommodationEntries(p.id);
+        loadServiceEntries(p.id);
       }
     });
   }, []);
@@ -127,6 +145,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       console.error('Failed to load accommodation entries:', err);
     } finally {
       setLoadingAccommodation(false);
+    }
+  };
+
+  const loadServiceEntries = async (id: string) => {
+    try {
+      setLoadingService(true);
+      const data = await api.getServiceEntries(parseInt(id));
+      setServiceEntries(data);
+    } catch (err) {
+      console.error('Failed to load service entries:', err);
+    } finally {
+      setLoadingService(false);
     }
   };
 
@@ -302,6 +332,74 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       setAccommodationEntries(accommodationEntries.filter(a => a.id !== accommodationId));
     } catch (err) {
       alert('Greška pri brisanju smeštaja');
+    }
+  };
+
+  const handleServiceFormSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!tripId) return;
+
+    try {
+      const serviceData = {
+        serviceType: serviceFormData.serviceType,
+        description: serviceFormData.description,
+        serviceDate: serviceFormData.serviceDate + 'T12:00:00Z',
+        amount: parseFloat(serviceFormData.amount),
+        currency: serviceFormData.currency,
+        location: serviceFormData.location,
+        mileage: serviceFormData.mileage ? parseInt(serviceFormData.mileage) : undefined,
+        note: serviceFormData.note || undefined
+      };
+
+      if (editingServiceId) {
+        await api.updateServiceEntry(parseInt(tripId), editingServiceId, serviceData);
+      } else {
+        await api.createServiceEntry(parseInt(tripId), serviceData);
+      }
+
+      await loadServiceEntries(tripId);
+      setShowServiceForm(false);
+      setEditingServiceId(null);
+      setServiceFormData({
+        serviceType: 'Podmazivanje lanca',
+        description: '',
+        serviceDate: new Date().toISOString().split('T')[0],
+        amount: '',
+        currency: 'EUR',
+        location: '',
+        mileage: '',
+        note: ''
+      });
+    } catch (err) {
+      alert('Greška pri čuvanju servisa');
+    }
+  };
+
+  const handleEditService = (service: ServiceEntry) => {
+    setEditingServiceId(service.id);
+    setServiceFormData({
+      serviceType: service.serviceType,
+      description: service.description,
+      serviceDate: service.serviceDate.split('T')[0],
+      amount: service.amount.toString(),
+      currency: service.currency,
+      location: service.location,
+      mileage: service.mileage?.toString() || '',
+      note: service.note || ''
+    });
+    setShowServiceForm(true);
+  };
+
+  const handleDeleteService = async (serviceId: number) => {
+    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovaj servis?')) {
+      return;
+    }
+
+    try {
+      await api.deleteServiceEntry(parseInt(tripId), serviceId);
+      setServiceEntries(serviceEntries.filter(s => s.id !== serviceId));
+    } catch (err) {
+      alert('Greška pri brisanju servisa');
     }
   };
 
@@ -1095,8 +1193,242 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
           {activeTab === 'service' && (
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Servis</h2>
-              <p className="text-zinc-600 dark:text-zinc-400">Funkcionalnost servisa u izradi...</p>
+              <div className="flex items-center mb-4">
+                {showServiceForm && (
+                  <button
+                    onClick={() => {
+                      setShowServiceForm(false);
+                      setEditingServiceId(null);
+                      setServiceFormData({
+                        serviceType: 'Podmazivanje lanca',
+                        description: '',
+                        serviceDate: new Date().toISOString().split('T')[0],
+                        amount: '',
+                        currency: 'EUR',
+                        location: '',
+                        mileage: '',
+                        note: ''
+                      });
+                    }}
+                    className="mr-3 text-black dark:text-white hover:text-zinc-600 dark:hover:text-zinc-400"
+                    title="Nazad"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
+                <h2 className="text-xl font-semibold text-black dark:text-white">
+                  {showServiceForm ? (editingServiceId ? 'Izmeni servis' : 'Dodaj servis') : 'Servisi'}
+                </h2>
+              </div>
+
+              {showServiceForm && (
+                <form onSubmit={handleServiceFormSubmit} className="mb-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Tip servisa *</label>
+                      <select
+                        value={serviceFormData.serviceType}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, serviceType: e.target.value })}
+                        required
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      >
+                        <option value="Podmazivanje lanca">Podmazivanje lanca</option>
+                        <option value="Promena ulja">Promena ulja</option>
+                        <option value="Promena guma">Promena guma</option>
+                        <option value="Servis kočnica">Servis kočnica</option>
+                        <option value="Ostalo">Ostalo</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Datum *</label>
+                      <input
+                        type="date"
+                        value={serviceFormData.serviceDate}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, serviceDate: e.target.value })}
+                        required
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Opis *</label>
+                      <input
+                        type="text"
+                        value={serviceFormData.description}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, description: e.target.value })}
+                        required
+                        placeholder="Npr. Podmazivanje lanca DID lancem"
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Iznos *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={serviceFormData.amount}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, amount: e.target.value })}
+                        required
+                        placeholder="0.00"
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Valuta *</label>
+                      <select
+                        value={serviceFormData.currency}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, currency: e.target.value })}
+                        required
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      >
+                        <option value="EUR">EUR</option>
+                        <option value="RSD">RSD</option>
+                        <option value="USD">USD</option>
+                        <option value="BAM">BAM</option>
+                        <option value="HRK">HRK</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Lokacija *</label>
+                      <input
+                        type="text"
+                        value={serviceFormData.location}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, location: e.target.value })}
+                        required
+                        placeholder="Npr. Beograd, Srbija"
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Kilometraža</label>
+                      <input
+                        type="number"
+                        value={serviceFormData.mileage}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, mileage: e.target.value })}
+                        placeholder="npr. 15000"
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Napomena</label>
+                      <textarea
+                        value={serviceFormData.note}
+                        onChange={(e) => setServiceFormData({ ...serviceFormData, note: e.target.value })}
+                        rows={3}
+                        placeholder="Dodatne informacije..."
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowServiceForm(false);
+                        setEditingServiceId(null);
+                        setServiceFormData({
+                          serviceType: 'Podmazivanje lanca',
+                          description: '',
+                          serviceDate: new Date().toISOString().split('T')[0],
+                          amount: '',
+                          currency: 'EUR',
+                          location: '',
+                          mileage: '',
+                          note: ''
+                        });
+                      }}
+                      className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      Otkaži
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      {editingServiceId ? 'Sačuvaj' : 'Dodaj'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {!showServiceForm && (
+                <div>
+                  {loadingService ? (
+                    <p className="text-zinc-600 dark:text-zinc-400">Učitavanje...</p>
+                  ) : serviceEntries.length === 0 ? (
+                    <p className="text-zinc-600 dark:text-zinc-400">Nema evidentiranih servisa.</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="border-b border-zinc-300 dark:border-zinc-700">
+                            <th className="text-left p-2 text-black dark:text-white">Datum</th>
+                            <th className="text-left p-2 text-black dark:text-white">Tip</th>
+                            <th className="text-left p-2 text-black dark:text-white">Opis</th>
+                            <th className="text-left p-2 text-black dark:text-white">Iznos</th>
+                            <th className="text-left p-2 text-black dark:text-white">Lokacija</th>
+                            <th className="text-left p-2 text-black dark:text-white">Kilometraža</th>
+                            <th className="w-12 p-2"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {serviceEntries.map((service) => (
+                            <tr
+                              key={service.id}
+                              className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                              onClick={() => handleEditService(service)}
+                            >
+                              <td className="p-2 text-black dark:text-white">
+                                {new Date(service.serviceDate).toLocaleDateString('sr-RS')}
+                              </td>
+                              <td className="p-2 text-black dark:text-white">{service.serviceType}</td>
+                              <td className="p-2 text-black dark:text-white">{service.description}</td>
+                              <td className="p-2 text-black dark:text-white">
+                                {service.amount.toFixed(2)} {service.currency}
+                              </td>
+                              <td className="p-2 text-black dark:text-white">{service.location}</td>
+                              <td className="p-2 text-black dark:text-white">
+                                {service.mileage ? `${service.mileage} km` : '-'}
+                              </td>
+                              <td className="p-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteService(service.id);
+                                  }}
+                                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                  title="Obriši"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setShowServiceForm(true)}
+                    className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 flex items-center justify-center text-2xl"
+                    title="Dodaj servis"
+                  >
+                    +
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

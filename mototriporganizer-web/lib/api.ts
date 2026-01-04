@@ -125,6 +125,44 @@ export interface UpdateAccommodationEntryDto {
   note?: string;
 }
 
+export interface ServiceEntry {
+  id: number;
+  tripId: number;
+  serviceType: string;
+  description: string;
+  serviceDate: string;
+  amount: number;
+  currency: string;
+  location: string;
+  mileage?: number;
+  note?: string;
+  createdByUserId: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateServiceEntryDto {
+  serviceType: string;
+  description: string;
+  serviceDate: string;
+  amount: number;
+  currency: string;
+  location: string;
+  mileage?: number;
+  note?: string;
+}
+
+export interface UpdateServiceEntryDto {
+  serviceType: string;
+  description: string;
+  serviceDate: string;
+  amount: number;
+  currency: string;
+  location: string;
+  mileage?: number;
+  note?: string;
+}
+
 // Helper to get auth token
 async function getAuthToken(): Promise<string | null> {
   try {
@@ -467,6 +505,68 @@ export const api = {
 
     if (!response.ok) {
       throw new Error(`Failed to delete accommodation entry: ${response.statusText}`);
+    }
+  },
+
+  // Service Entries
+  async getServiceEntries(tripId: number): Promise<ServiceEntry[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/services`, {
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch service entries: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async getServiceEntry(tripId: number, id: number): Promise<ServiceEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/services/${id}`, {
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch service entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async createServiceEntry(tripId: number, data: CreateServiceEntryDto): Promise<ServiceEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/services`, {
+      method: 'POST',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create service entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async updateServiceEntry(tripId: number, id: number, data: UpdateServiceEntryDto): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/services/${id}`, {
+      method: 'PUT',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update service entry: ${response.statusText}`);
+    }
+  },
+
+  async deleteServiceEntry(tripId: number, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/services/${id}`, {
+      method: 'DELETE',
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete service entry: ${response.statusText}`);
     }
   },
 };
