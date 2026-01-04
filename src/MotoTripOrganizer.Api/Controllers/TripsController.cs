@@ -7,8 +7,7 @@ using MotoTripOrganizer.Infrastructure.Data;
 
 namespace MotoTripOrganizer.Api.Controllers;
 
-// TODO: Re-enable authorization after frontend token handling is implemented
-// [Authorize]
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TripsController : ControllerBase
@@ -38,8 +37,37 @@ public class TripsController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
+            // Get all trips where user is a member
+            var tripIds = await _context.TripMembers
+                .Where(tm => tm.UserId == userId.Value)
+                .Select(tm => tm.TripId)
+                .ToListAsync();
+
+            // Also get trips where user is owner but not yet a member (legacy data migration)
+            var legacyTrips = await _context.Trips
+                .Where(t => t.UserId == userId.Value && !tripIds.Contains(t.Id))
+                .ToListAsync();
+
+            // Auto-migrate legacy trips
+            if (legacyTrips.Any())
+            {
+                foreach (var trip in legacyTrips)
+                {
+                    var ownerMember = new TripMember
+                    {
+                        TripId = trip.Id,
+                        UserId = userId.Value,
+                        Role = Domain.Enums.TripMemberRole.Owner,
+                        JoinedAt = trip.CreatedAt
+                    };
+                    _context.TripMembers.Add(ownerMember);
+                    tripIds.Add(trip.Id);
+                }
+                await _context.SaveChangesAsync();
+            }
+
             var trips = await _context.Trips
-                .Where(t => t.UserId == userId.Value)
+                .Where(t => tripIds.Contains(t.Id))
                 .Include(t => t.Stages)
                 .Include(t => t.Items)
                 .Include(t => t.Expenses)
@@ -80,11 +108,20 @@ public class TripsController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
+            // Check if user is a member of this trip
+            var isMember = await _context.TripMembers
+                .AnyAsync(tm => tm.TripId == id && tm.UserId == userId.Value);
+
+            if (!isMember)
+            {
+                return NotFound(new { message = "Trip not found or access denied" });
+            }
+
             var trip = await _context.Trips
                 .Include(t => t.Stages.OrderBy(s => s.DayNumber))
                 .Include(t => t.Items)
                 .Include(t => t.Expenses)
-                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId.Value);
+                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (trip == null)
             {
@@ -152,17 +189,30 @@ public class TripsController : ControllerBase
 
             var trip = new Trip
             {
+                OwnerUserId = userId.Value,
                 UserId = userId.Value,
                 Name = dto.Name,
-                Description = dto.Description,
+                Description = dto.Description ?? string.Empty,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 TotalDistance = 0,
-                Status = "Planning",
+                Status = dto.Status ?? "Planned",
+                BaseCurrency = "EUR",
                 CreatedAt = DateTime.UtcNow
             };
 
             _context.Trips.Add(trip);
+            await _context.SaveChangesAsync();
+
+            // Add creator as owner member
+            var ownerMember = new TripMember
+            {
+                TripId = trip.Id,
+                UserId = userId.Value,
+                Role = Domain.Enums.TripMemberRole.Owner,
+                JoinedAt = DateTime.UtcNow
+            };
+            _context.TripMembers.Add(ownerMember);
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Created trip {TripId} for user {UserId}", trip.Id, userId.Value);
@@ -186,7 +236,7 @@ public class TripsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating trip");
-            return StatusCode(500, new { message = "Internal server error" });
+            return StatusCode(500, new { message = "Internal server error", detail = ex.Message, innerException = ex.InnerException?.Message });
         }
     }
 
@@ -201,11 +251,20 @@ public class TripsController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
+            // Check if user is a member with edit rights
+            var member = await _context.TripMembers
+                .FirstOrDefaultAsync(tm => tm.TripId == id && tm.UserId == userId.Value);
+
+            if (member == null || (member.Role != Domain.Enums.TripMemberRole.Owner && member.Role != Domain.Enums.TripMemberRole.Editor))
+            {
+                return Forbid();
+            }
+
             var trip = await _context.Trips
                 .Include(t => t.Stages)
                 .Include(t => t.Items)
                 .Include(t => t.Expenses)
-                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId.Value);
+                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (trip == null)
             {
@@ -254,8 +313,17 @@ public class TripsController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
+            // Only owner can delete trip
+            var member = await _context.TripMembers
+                .FirstOrDefaultAsync(tm => tm.TripId == id && tm.UserId == userId.Value);
+
+            if (member == null || member.Role != Domain.Enums.TripMemberRole.Owner)
+            {
+                return Forbid();
+            }
+
             var trip = await _context.Trips
-                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId.Value);
+                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (trip == null)
             {
@@ -311,6 +379,7 @@ public record CreateTripDto
     public string Description { get; init; } = string.Empty;
     public DateTime StartDate { get; init; }
     public DateTime? EndDate { get; init; }
+    public string Status { get; init; } = "Planned";
 }
 
 public record UpdateTripDto
@@ -341,14 +410,4 @@ public record ItemDto
     public int Quantity { get; init; }
     public bool IsPacked { get; init; }
     public string Notes { get; init; } = string.Empty;
-}
-
-public record ExpenseDto
-{
-    public int Id { get; init; }
-    public DateTime Date { get; init; }
-    public string Category { get; init; } = string.Empty;
-    public string Description { get; init; } = string.Empty;
-    public decimal Amount { get; init; }
-    public string Currency { get; init; } = string.Empty;
 }

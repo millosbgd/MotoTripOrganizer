@@ -90,6 +90,10 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 app.UseAuthentication();
+
+// Bootstrap user on every authenticated request
+app.UseMiddleware<MotoTripOrganizer.Api.Middleware.UserBootstrapMiddleware>();
+
 app.UseAuthorization();
 
 // Map Controllers
@@ -105,7 +109,7 @@ app.MapGet("/api/hello", () => Results.Ok(new {
     message = "Moto Trip Organizer API",
     version = "0.1.0",
     environment = app.Environment.EnvironmentName
-})).RequireAuthorization();
+})); // .RequireAuthorization(); // TODO: Re-enable after frontend token handling
 
 // Health check endpoints
 app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

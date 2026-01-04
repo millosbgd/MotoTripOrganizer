@@ -26,6 +26,49 @@ public class ExpensesController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<List<ExpenseDto>>> GetExpenses(int tripId)
+    {
+        try
+        {
+            var userId = _currentUserService.GetUserId();
+            if (!userId.HasValue)
+            {
+                return Unauthorized(new { message = "User not authenticated" });
+            }
+
+            // Check if user is a member of this trip
+            var isMember = await _context.TripMembers
+                .AnyAsync(tm => tm.TripId == tripId && tm.UserId == userId.Value);
+
+            if (!isMember)
+            {
+                return NotFound(new { message = "Trip not found or access denied" });
+            }
+
+            var expenses = await _context.Expenses
+                .Where(e => e.TripId == tripId)
+                .OrderByDescending(e => e.Date)
+                .Select(e => new ExpenseDto
+                {
+                    Id = e.Id,
+                    Date = e.Date,
+                    Category = e.Category,
+                    Description = e.Description,
+                    Amount = e.Amount,
+                    Currency = e.Currency
+                })
+                .ToListAsync();
+
+            return Ok(expenses);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting expenses for trip {TripId}", tripId);
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+
     [HttpPost]
     public async Task<ActionResult<ExpenseDto>> CreateExpense(int tripId, [FromBody] CreateExpenseDto dto)
     {
@@ -53,6 +96,8 @@ public class ExpensesController : ControllerBase
                 Description = dto.Description,
                 Amount = dto.Amount,
                 Currency = dto.Currency,
+                PaidByUserId = userId.Value,
+                CreatedByUserId = userId.Value,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -199,6 +244,16 @@ public class ExpensesController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
+}
+
+public record ExpenseDto
+{
+    public int Id { get; init; }
+    public DateTime Date { get; init; }
+    public string Category { get; init; } = string.Empty;
+    public string Description { get; init; } = string.Empty;
+    public decimal Amount { get; init; }
+    public string Currency { get; init; } = "EUR";
 }
 
 public record CreateExpenseDto
