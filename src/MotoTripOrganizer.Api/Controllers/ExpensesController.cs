@@ -144,9 +144,10 @@ public class ExpensesController : ControllerBase
 
             var expense = await _context.Expenses
                 .Include(e => e.Trip)
-                .FirstOrDefaultAsync(e => e.Id == id && e.TripId == tripId && e.Trip.UserId == userId.Value);
+                    .ThenInclude(t => t.Members)
+                .FirstOrDefaultAsync(e => e.Id == id && e.TripId == tripId);
 
-            if (expense == null)
+            if (expense == null || (expense.Trip.UserId != userId.Value && !expense.Trip.Members.Any(m => m.UserId == userId.Value)))
             {
                 return NotFound(new { message = "Expense not found" });
             }
@@ -184,9 +185,10 @@ public class ExpensesController : ControllerBase
 
             var expense = await _context.Expenses
                 .Include(e => e.Trip)
-                .FirstOrDefaultAsync(e => e.Id == id && e.TripId == tripId && e.Trip.UserId == userId.Value);
+                    .ThenInclude(t => t.Members)
+                .FirstOrDefaultAsync(e => e.Id == id && e.TripId == tripId);
 
-            if (expense == null)
+            if (expense == null || (expense.Trip.UserId != userId.Value && !expense.Trip.Members.Any(m => m.UserId == userId.Value)))
             {
                 return NotFound(new { message = "Expense not found" });
             }
@@ -233,9 +235,10 @@ public class ExpensesController : ControllerBase
 
             var expense = await _context.Expenses
                 .Include(e => e.Trip)
-                .FirstOrDefaultAsync(e => e.Id == id && e.TripId == tripId && e.Trip.UserId == userId.Value);
+                    .ThenInclude(t => t.Members)
+                .FirstOrDefaultAsync(e => e.Id == id && e.TripId == tripId);
 
-            if (expense == null)
+            if (expense == null || (expense.Trip.UserId != userId.Value && !expense.Trip.Members.Any(m => m.UserId == userId.Value)))
             {
                 return NotFound(new { message = "Expense not found" });
             }
