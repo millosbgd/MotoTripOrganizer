@@ -500,10 +500,22 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               </div>
 
               {showFuelForm && (
-                <div className="mb-6 bg-white dark:bg-zinc-800 rounded-lg p-6 border border-zinc-200 dark:border-zinc-700">
-                  <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
-                    {editingFuelId ? 'Uredi sipanje' : 'Novo sipanje'}
-                  </h3>
+                <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 border border-zinc-200 dark:border-zinc-700">
+                  <div className="flex items-center gap-3 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowFuelForm(false);
+                        setEditingFuelId(null);
+                      }}
+                      className="text-black dark:text-white hover:opacity-70 transition-opacity text-2xl"
+                    >
+                      ◀
+                    </button>
+                    <h3 className="text-lg font-semibold text-black dark:text-white">
+                      {editingFuelId ? 'Uredi sipanje' : 'Novo sipanje'}
+                    </h3>
+                  </div>
                   <form onSubmit={handleFuelFormSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -608,7 +620,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                 </div>
               )}
 
-              {loadingFuel ? (
+              {!showFuelForm && (loadingFuel ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-zinc-600 dark:text-zinc-400">Učitavanje...</div>
                 </div>
@@ -680,7 +692,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     </tbody>
                   </table>
                 </div>
-              )}
+              ))}
 
               {/* Floating Action Button */}
               <button
