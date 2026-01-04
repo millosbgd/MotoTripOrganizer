@@ -21,14 +21,42 @@ export interface CreateTripDto {
   status?: 'Planned' | 'Active' | 'Completed' | 'Cancelled';
 }
 
-// Helper to get auth token from cookie
+export interface Expense {
+  id: number;
+  date: string;
+  category: string;
+  description: string;
+  amount: number;
+  currency: string;
+}
+
+export interface CreateExpenseDto {
+  date: string;
+  category: string;
+  description: string;
+  amount: number;
+  currency?: string;
+}
+
+export interface TripMember {
+  userId: number;
+  displayName: string;
+  role: 'Owner' | 'Editor' | 'Viewer';
+  joinedAt: string;
+}
+
+export interface AddMemberDto {
+  email: string;
+  role?: 'Editor' | 'Viewer';
+}
+
+// Helper to get auth token
 async function getAuthToken(): Promise<string | null> {
   try {
-    const response = await fetch('/api/me');
+    const response = await fetch('/api/auth/me');
     if (response.ok) {
       const data = await response.json();
-      // For now, we'll handle token separately
-      return null; // TODO: Implement token retrieval
+      return data.accessToken || null;
     }
   } catch (error) {
     console.error('Failed to get auth token:', error);
@@ -36,14 +64,26 @@ async function getAuthToken(): Promise<string | null> {
   return null;
 }
 
+// Helper to build headers with optional auth token
+async function buildHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  const token = await getAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
+
 // API calls
 export const api = {
   // Get all trips
   async getTrips(): Promise<Trip[]> {
     const response = await fetch(`${API_URL}/api/trips`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await buildHeaders(),
       cache: 'no-store'
     });
 
@@ -57,9 +97,7 @@ export const api = {
   // Get single trip
   async getTrip(id: number): Promise<Trip> {
     const response = await fetch(`${API_URL}/api/trips/${id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await buildHeaders(),
       cache: 'no-store'
     });
 
@@ -74,9 +112,7 @@ export const api = {
   async createTrip(data: CreateTripDto): Promise<Trip> {
     const response = await fetch(`${API_URL}/api/trips`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await buildHeaders(),
       body: JSON.stringify(data),
     });
 
@@ -91,9 +127,7 @@ export const api = {
   async updateTrip(id: number, data: Partial<CreateTripDto>): Promise<void> {
     const response = await fetch(`${API_URL}/api/trips/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await buildHeaders(),
       body: JSON.stringify(data),
     });
 
@@ -106,13 +140,118 @@ export const api = {
   async deleteTrip(id: number): Promise<void> {
     const response = await fetch(`${API_URL}/api/trips/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: await buildHeaders(),
     });
 
     if (!response.ok) {
       throw new Error(`Failed to delete trip: ${response.statusText}`);
+    }
+  },
+
+  // Get all expenses for a trip
+  async getExpenses(tripId: number): Promise<Expense[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/expenses`, {
+      headers: await buildHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch expenses: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Get single expense
+  async getExpense(tripId: number, id: number): Promise<Expense> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/expenses/${id}`, {
+      headers: await buildHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch expense: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Create expense
+  async createExpense(tripId: number, data: CreateExpenseDto): Promise<Expense> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/expenses`, {
+      method: 'POST',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create expense: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Update expense
+  async updateExpense(tripId: number, id: number, data: Partial<CreateExpenseDto>): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/expenses/${id}`, {
+      method: 'PUT',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update expense: ${response.statusText}`);
+    }
+  },
+
+  // Delete expense
+  async deleteExpense(tripId: number, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/expenses/${id}`, {
+      method: 'DELETE',
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete expense: ${response.statusText}`);
+    }
+  },
+
+  // Get trip members
+  async getMembers(tripId: number): Promise<TripMember[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/members`, {
+      headers: await buildHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch members: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Add member to trip
+  async addMember(tripId: number, data: AddMemberDto): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/members`, {
+      method: 'POST',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to add member: ${response.statusText}`);
+    }
+  },
+
+  // Remove member from trip
+  async removeMember(tripId: number, userId: number): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/members/${userId}`, {
+      method: 'DELETE',
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to remove member: ${response.statusText}`);
     }
   },
 };
