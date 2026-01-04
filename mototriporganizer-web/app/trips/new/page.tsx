@@ -43,7 +43,7 @@ export default function NewTripPage() {
             href="/trips"
             className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white mb-4 inline-block"
           >
-            ‹ Nazad na listu
+            ◀ Nazad na listu
           </Link>
           <h1 className="text-3xl font-bold text-black dark:text-white">
             Novi Trip 🏍️
