@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { api, Trip, Expense, TripMember, FuelEntry } from '@/lib/api';
+import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry } from '@/lib/api';
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -12,10 +12,12 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [members, setMembers] = useState<TripMember[]>([]);
   const [fuelEntries, setFuelEntries] = useState<FuelEntry[]>([]);
+  const [accommodationEntries, setAccommodationEntries] = useState<AccommodationEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingExpenses, setLoadingExpenses] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [loadingFuel, setLoadingFuel] = useState(false);
+  const [loadingAccommodation, setLoadingAccommodation] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
@@ -29,6 +31,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     amount: '',
     currency: 'EUR',
     mileage: '',
+    location: '',
+    note: ''
+  });
+  const [showAccommodationForm, setShowAccommodationForm] = useState(false);
+  const [editingAccommodationId, setEditingAccommodationId] = useState<number | null>(null);
+  const [accommodationFormData, setAccommodationFormData] = useState({
+    name: '',
+    accommodationType: 'Hotel',
+    checkInDate: new Date().toISOString().split('T')[0],
+    checkOutDate: new Date().toISOString().split('T')[0],
+    amount: '',
+    currency: 'EUR',
     location: '',
     note: ''
   });
@@ -51,6 +65,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         loadExpenses(p.id);
         loadMembers(p.id);
         loadFuelEntries(p.id);
+        loadAccommodationEntries(p.id);
       }
     });
   }, []);
@@ -100,6 +115,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       console.error('Failed to load fuel entries:', err);
     } finally {
       setLoadingFuel(false);
+    }
+  };
+
+  const loadAccommodationEntries = async (id: string) => {
+    try {
+      setLoadingAccommodation(true);
+      const data = await api.getAccommodationEntries(parseInt(id));
+      setAccommodationEntries(data);
+    } catch (err) {
+      console.error('Failed to load accommodation entries:', err);
+    } finally {
+      setLoadingAccommodation(false);
     }
   };
 
@@ -207,6 +234,74 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       setFuelEntries(fuelEntries.filter(f => f.id !== fuelId));
     } catch (err) {
       alert('Greška pri brisanju sipanja goriva');
+    }
+  };
+
+  const handleAccommodationFormSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!tripId) return;
+
+    try {
+      const accommodationData = {
+        name: accommodationFormData.name,
+        accommodationType: accommodationFormData.accommodationType,
+        checkInDate: accommodationFormData.checkInDate + 'T12:00:00Z',
+        checkOutDate: accommodationFormData.checkOutDate + 'T12:00:00Z',
+        amount: parseFloat(accommodationFormData.amount),
+        currency: accommodationFormData.currency,
+        location: accommodationFormData.location,
+        note: accommodationFormData.note || undefined
+      };
+
+      if (editingAccommodationId) {
+        await api.updateAccommodationEntry(parseInt(tripId), editingAccommodationId, accommodationData);
+      } else {
+        await api.createAccommodationEntry(parseInt(tripId), accommodationData);
+      }
+
+      setShowAccommodationForm(false);
+      setEditingAccommodationId(null);
+      setAccommodationFormData({
+        name: '',
+        accommodationType: 'Hotel',
+        checkInDate: new Date().toISOString().split('T')[0],
+        checkOutDate: new Date().toISOString().split('T')[0],
+        amount: '',
+        currency: 'EUR',
+        location: '',
+        note: ''
+      });
+      await loadAccommodationEntries(tripId);
+    } catch (err) {
+      alert('Greška pri čuvanju smeštaja');
+    }
+  };
+
+  const handleEditAccommodation = (accommodation: AccommodationEntry) => {
+    setEditingAccommodationId(accommodation.id);
+    setAccommodationFormData({
+      name: accommodation.name,
+      accommodationType: accommodation.accommodationType,
+      checkInDate: accommodation.checkInDate.split('T')[0],
+      checkOutDate: accommodation.checkOutDate.split('T')[0],
+      amount: accommodation.amount.toString(),
+      currency: accommodation.currency,
+      location: accommodation.location,
+      note: accommodation.note || ''
+    });
+    setShowAccommodationForm(true);
+  };
+
+  const handleDeleteAccommodation = async (accommodationId: number) => {
+    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovaj smeštaj?')) {
+      return;
+    }
+
+    try {
+      await api.deleteAccommodationEntry(parseInt(tripId), accommodationId);
+      setAccommodationEntries(accommodationEntries.filter(a => a.id !== accommodationId));
+    } catch (err) {
+      alert('Greška pri brisanju smeštaja');
     }
   };
 
@@ -741,9 +836,260 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
           )}
 
           {activeTab === 'accommodation' && (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Smeštaj</h2>
-              <p className="text-zinc-600 dark:text-zinc-400">Funkcionalnost smeštaja u izradi...</p>
+            <div className="p-6 relative">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-black dark:text-white">Smeštaj</h2>
+              </div>
+
+              {showAccommodationForm && (
+                <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 border border-zinc-200 dark:border-zinc-700">
+                  <div className="flex items-center gap-3 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAccommodationForm(false);
+                        setEditingAccommodationId(null);
+                      }}
+                      className="text-black dark:text-white hover:opacity-70 transition-opacity text-2xl"
+                    >
+                      ◀
+                    </button>
+                    <h3 className="text-lg font-semibold text-black dark:text-white">
+                      {editingAccommodationId ? 'Uredi smeštaj' : 'Novi smeštaj'}
+                    </h3>
+                  </div>
+                  <form onSubmit={handleAccommodationFormSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Naziv
+                        </label>
+                        <input
+                          type="text"
+                          value={accommodationFormData.name}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, name: e.target.value})}
+                          required
+                          placeholder="Hotel Putnik, Apartman Centar..."
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Tip smeštaja
+                        </label>
+                        <select
+                          value={accommodationFormData.accommodationType}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, accommodationType: e.target.value})}
+                          required
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        >
+                          <option value="Hotel">Hotel</option>
+                          <option value="Apartman">Apartman</option>
+                          <option value="Kamp">Kamp</option>
+                          <option value="Kod prijatelja">Kod prijatelja</option>
+                          <option value="Ostalo">Ostalo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Check-in
+                        </label>
+                        <input
+                          type="date"
+                          value={accommodationFormData.checkInDate}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, checkInDate: e.target.value})}
+                          required
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Check-out
+                        </label>
+                        <input
+                          type="date"
+                          value={accommodationFormData.checkOutDate}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, checkOutDate: e.target.value})}
+                          required
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Iznos
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={accommodationFormData.amount}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, amount: e.target.value})}
+                          required
+                          placeholder="0.00"
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Valuta
+                        </label>
+                        <select
+                          value={accommodationFormData.currency}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, currency: e.target.value})}
+                          required
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        >
+                          <option value="EUR">EUR</option>
+                          <option value="RSD">RSD</option>
+                          <option value="USD">USD</option>
+                          <option value="BAM">BAM</option>
+                          <option value="HRK">HRK</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Lokacija
+                        </label>
+                        <input
+                          type="text"
+                          value={accommodationFormData.location}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, location: e.target.value})}
+                          required
+                          placeholder="Beograd, Srbija"
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Napomena
+                        </label>
+                        <textarea
+                          value={accommodationFormData.note}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, note: e.target.value})}
+                          rows={3}
+                          placeholder="Dodatne informacije..."
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Sačuvaj
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAccommodationForm(false);
+                          setEditingAccommodationId(null);
+                        }}
+                        className="px-6 py-2 bg-zinc-500 text-white rounded-lg hover:bg-zinc-600 transition-colors"
+                      >
+                        Otkaži
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {!showAccommodationForm && (loadingAccommodation ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-zinc-600 dark:text-zinc-400">Učitavanje...</div>
+                </div>
+              ) : accommodationEntries.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-zinc-600 dark:text-zinc-400">Još nema unetih smeštaja</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-2">
+                    Klikni "Dodaj smeštaj" da uneseš prvi smeštaj
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Naziv</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tip</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Check-in</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Check-out</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Lokacija</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Iznos</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {accommodationEntries.map((accommodation) => (
+                        <tr 
+                          key={accommodation.id} 
+                          onClick={() => handleEditAccommodation(accommodation)}
+                          className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
+                        >
+                          <td className="py-3 px-4 text-sm text-black dark:text-white">
+                            {accommodation.name}
+                            {accommodation.note && (
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{accommodation.note}</div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-black dark:text-white">
+                            {accommodation.accommodationType}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-black dark:text-white">
+                            {new Date(accommodation.checkInDate).toLocaleDateString('sr-RS')}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-black dark:text-white">
+                            {new Date(accommodation.checkOutDate).toLocaleDateString('sr-RS')}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-black dark:text-white">
+                            {accommodation.location}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
+                            {accommodation.amount.toFixed(2)} {accommodation.currency}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteAccommodation(accommodation.id);
+                              }}
+                              className="p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              title="Obriši"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+
+              {/* Floating Action Button */}
+              <button
+                onClick={() => {
+                  setEditingAccommodationId(null);
+                  setAccommodationFormData({
+                    name: '',
+                    accommodationType: 'Hotel',
+                    checkInDate: new Date().toISOString().split('T')[0],
+                    checkOutDate: new Date().toISOString().split('T')[0],
+                    amount: '',
+                    currency: 'EUR',
+                    location: '',
+                    note: ''
+                  });
+                  setShowAccommodationForm(true);
+                }}
+                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-10"
+                title="Dodaj smeštaj"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
             </div>
           )}
 

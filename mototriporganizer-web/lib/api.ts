@@ -86,6 +86,45 @@ export interface UpdateFuelEntryDto {
   location: string;
   note?: string;
 }
+
+export interface AccommodationEntry {
+  id: number;
+  tripId: number;
+  name: string;
+  accommodationType: string;
+  checkInDate: string;
+  checkOutDate: string;
+  amount: number;
+  currency: string;
+  location: string;
+  note?: string;
+  createdByUserId: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateAccommodationEntryDto {
+  name: string;
+  accommodationType: string;
+  checkInDate: string;
+  checkOutDate: string;
+  amount: number;
+  currency: string;
+  location: string;
+  note?: string;
+}
+
+export interface UpdateAccommodationEntryDto {
+  name: string;
+  accommodationType: string;
+  checkInDate: string;
+  checkOutDate: string;
+  amount: number;
+  currency: string;
+  location: string;
+  note?: string;
+}
+
 // Helper to get auth token
 async function getAuthToken(): Promise<string | null> {
   try {
@@ -358,6 +397,76 @@ export const api = {
 
     if (!response.ok) {
       throw new Error(`Failed to delete fuel entry: ${response.statusText}`);
+    }
+  },
+
+  // Get accommodation entries
+  async getAccommodationEntries(tripId: number): Promise<AccommodationEntry[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/accommodations`, {
+      headers: await buildHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch accommodation entries: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Get single accommodation entry
+  async getAccommodationEntry(tripId: number, id: number): Promise<AccommodationEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/accommodations/${id}`, {
+      headers: await buildHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch accommodation entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Create accommodation entry
+  async createAccommodationEntry(tripId: number, data: CreateAccommodationEntryDto): Promise<AccommodationEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/accommodations`, {
+      method: 'POST',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create accommodation entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Update accommodation entry
+  async updateAccommodationEntry(tripId: number, id: number, data: UpdateAccommodationEntryDto): Promise<AccommodationEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/accommodations/${id}`, {
+      method: 'PUT',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update accommodation entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Delete accommodation entry
+  async deleteAccommodationEntry(tripId: number, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/accommodations/${id}`, {
+      method: 'DELETE',
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete accommodation entry: ${response.statusText}`);
     }
   },
 };
