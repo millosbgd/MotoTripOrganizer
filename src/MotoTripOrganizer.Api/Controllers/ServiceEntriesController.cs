@@ -33,9 +33,9 @@ namespace MotoTripOrganizer.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ServiceEntryDto>>> GetServiceEntries(int tripId)
         {
-            var userId = _currentUserService.UserId;
+            var userId = _currentUserService.GetUserId();
 
-            if (userId == null)
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
@@ -79,9 +79,9 @@ namespace MotoTripOrganizer.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceEntryDto>> GetServiceEntry(int tripId, int id)
         {
-            var userId = _currentUserService.UserId;
+            var userId = _currentUserService.GetUserId();
 
-            if (userId == null)
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
@@ -128,9 +128,9 @@ namespace MotoTripOrganizer.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<ServiceEntryDto>> CreateServiceEntry(int tripId, CreateServiceEntryDto dto)
         {
-            var userId = _currentUserService.UserId;
+            var userId = _currentUserService.GetUserId();
 
-            if (userId == null)
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
@@ -188,9 +188,9 @@ namespace MotoTripOrganizer.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateServiceEntry(int tripId, int id, UpdateServiceEntryDto dto)
         {
-            var userId = _currentUserService.UserId;
+            var userId = _currentUserService.GetUserId();
 
-            if (userId == null)
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
@@ -243,9 +243,9 @@ namespace MotoTripOrganizer.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteServiceEntry(int tripId, int id)
         {
-            var userId = _currentUserService.UserId;
+            var userId = _currentUserService.GetUserId();
 
-            if (userId == null)
+            if (!userId.HasValue)
             {
                 return Unauthorized();
             }
