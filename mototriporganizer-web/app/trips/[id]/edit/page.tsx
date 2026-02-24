@@ -663,25 +663,33 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       }, {} as Record<string, typeof expenses>)
                   ).map(([date, groupExpenses]) => (
                     <div key={date}>
-                      <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2 px-3">
+                      <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-3 px-1">
                         {date}
                       </h3>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <tbody>
-                            {groupExpenses.map((expense) => (
-                              <tr
-                                key={expense.id}
-                                className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
-                                onClick={() => router.push(`/trips/${tripId}/expenses/${expense.id}/edit`)}
-                              >
-                                <td className="py-3 px-3 text-black dark:text-white">{expense.description || expense.category}</td>
-                                <td className="py-3 px-3 text-right text-black dark:text-white">{expense.amount.toFixed(2)}</td>
-                                <td className="py-3 px-3 text-center text-black dark:text-white">{expense.currency}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className="space-y-3">
+                        {groupExpenses.map((expense) => (
+                          <div
+                            key={expense.id}
+                            onClick={() => router.push(`/trips/${tripId}/expenses/${expense.id}/edit`)}
+                            className="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 cursor-pointer transition-all hover:shadow-md"
+                          >
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-base font-medium text-black dark:text-white truncate">
+                                  {expense.description || expense.category}
+                                </h4>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                                  {expense.category}
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-lg font-semibold text-black dark:text-white">
+                                  {expense.amount.toFixed(2)} {expense.currency}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
