@@ -47,6 +47,7 @@ public class ExpensesController : ControllerBase
             }
 
             var expenses = await _context.Expenses
+                .Include(e => e.PaidBy)
                 .Where(e => e.TripId == tripId)
                 .OrderByDescending(e => e.Date)
                 .Select(e => new ExpenseDto
@@ -57,7 +58,8 @@ public class ExpensesController : ControllerBase
                     Description = e.Description,
                     Amount = e.Amount,
                     Currency = e.Currency,
-                    IsShared = e.IsShared
+                    IsShared = e.IsShared,
+                    PaidByDisplayName = e.PaidBy.DisplayName
                 })
                 .ToListAsync();
 
@@ -143,6 +145,7 @@ public class ExpensesController : ControllerBase
             }
 
             var expense = await _context.Expenses
+                .Include(e => e.PaidBy)
                 .Include(e => e.Trip)
                     .ThenInclude(t => t.Members)
                 .FirstOrDefaultAsync(e => e.Id == id && e.TripId == tripId);
@@ -160,7 +163,8 @@ public class ExpensesController : ControllerBase
                 Description = expense.Description,
                 Amount = expense.Amount,
                 Currency = expense.Currency,
-                IsShared = expense.IsShared
+                IsShared = expense.IsShared,
+                PaidByDisplayName = expense.PaidBy.DisplayName
             };
 
             return Ok(result);
@@ -267,6 +271,7 @@ public record ExpenseDto
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "EUR";
     public bool IsShared { get; init; }
+    public string PaidByDisplayName { get; init; } = string.Empty;
 }
 
 public record CreateExpenseDto

@@ -29,6 +29,7 @@ export interface Expense {
   amount: number;
   currency: string;
   isShared: boolean;
+  paidByDisplayName: string;
 }
 
 export interface CreateExpenseDto {
