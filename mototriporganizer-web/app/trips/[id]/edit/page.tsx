@@ -507,12 +507,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       };
     });
 
+    // Izračunaj koliko svako DUGUJE (samo trenutni članovi dele troškove)
+    members.forEach(member => {
+      participants[member.userId].owes = sharePerPerson;
+    });
+
     // Izračunaj koliko je svako PLATIO
     sharedExpenses.forEach(expense => {
       if (participants[expense.paidByUserId]) {
         participants[expense.paidByUserId].paid += expense.amount;
       } else {
         // Neko je platio ali nije u trenutnim članovima - dodaj ga
+        // On ne duguje ništa (owes=0) jer više nije na putu
         participants[expense.paidByUserId] = {
           userId: expense.paidByUserId,
           displayName: expense.paidByDisplayName,
@@ -521,11 +527,6 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
           net: 0
         };
       }
-    });
-
-    // Izračunaj koliko svako DUGUJE (njegov deo svih zajedničkih troškova)
-    Object.values(participants).forEach(person => {
-      person.owes = sharePerPerson;
     });
 
     // Izračunaj NET = Paid - Owes za svakog (zaokruži na 2 decimale)
