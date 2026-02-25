@@ -539,7 +539,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     // Provera: zbir svih Net treba da bude ~0
     const netSum = balances.reduce((sum, p) => sum + p.net, 0);
     if (Math.abs(netSum) > 0.01) {
-      console.warn(`Net sum validation failed: ${netSum.toFixed(2)} (should be ~0)`);
+      console.warn(`Balance validation: Net sum = ${netSum.toFixed(4)} (should be ~0)`);
     }
 
     // Greedy matching za settlements
