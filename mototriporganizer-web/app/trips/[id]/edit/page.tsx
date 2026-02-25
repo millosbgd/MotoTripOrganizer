@@ -503,10 +503,19 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       };
     });
 
-    // Sum up payments
+    // Sum up payments and handle people who paid but aren't current members
     sharedExpenses.forEach(expense => {
       if (payments[expense.paidByUserId]) {
         payments[expense.paidByUserId].paid += expense.amount;
+      } else {
+        // Someone who paid but is not in current members list
+        payments[expense.paidByUserId] = {
+          userId: expense.paidByUserId,
+          displayName: expense.paidByDisplayName,
+          paid: expense.amount,
+          owed: sharePerPerson,
+          balance: 0
+        };
       }
     });
 
@@ -517,9 +526,16 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
     const balances = Object.values(payments);
 
-    // Calculate settlements (who owes whom)
-    const creditors = balances.filter(p => p.balance > 0.01).sort((a, b) => b.balance - a.balance);
-    const debtors = balances.filter(p => p.balance < -0.01).sort((a, b) => a.balance - b.balance);
+    // Calculate settlements (who owes whom) - clone objects to avoid mutation
+    const creditors = balances
+      .filter(p => p.balance > 0.01)
+      .map(p => ({ ...p })) // Clone to avoid mutating original
+      .sort((a, b) => b.balance - a.balance);
+    
+    const debtors = balances
+      .filter(p => p.balance < -0.01)
+      .map(p => ({ ...p })) // Clone to avoid mutating original
+      .sort((a, b) => a.balance - b.balance);
 
     const settlements: { from: string; to: string; amount: number }[] = [];
 
