@@ -667,29 +667,52 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                         {date}
                       </h3>
                       <div className="space-y-3">
-                        {groupExpenses.map((expense) => (
-                          <div
-                            key={expense.id}
-                            onClick={() => router.push(`/trips/${tripId}/expenses/${expense.id}/edit`)}
-                            className="bg-white dark:bg-zinc-800 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 cursor-pointer transition-all hover:shadow-md"
-                          >
-                            <div className="flex justify-between items-start gap-4">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="text-base font-medium text-black dark:text-white truncate">
-                                  {expense.description || expense.category}
-                                </h4>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                  {expense.category}
-                                </p>
-                              </div>
-                              <div className="text-right flex-shrink-0">
-                                <div className="text-lg font-semibold text-black dark:text-white">
-                                  {expense.amount.toFixed(2)} {expense.currency}
+                        {groupExpenses.map((expense) => {
+                          const getCategoryStyle = (category: string) => {
+                            const styles: Record<string, { border: string; bg: string; emoji: string }> = {
+                              'Gorivo': { border: 'border-l-4 border-l-red-500', bg: 'bg-gradient-to-r from-red-50 to-white dark:from-red-950/20 dark:to-zinc-800', emoji: '⛽' },
+                              'Hrana': { border: 'border-l-4 border-l-orange-500', bg: 'bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-zinc-800', emoji: '🍔' },
+                              'Smeštaj': { border: 'border-l-4 border-l-blue-500', bg: 'bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-zinc-800', emoji: '🏨' },
+                              'Transport': { border: 'border-l-4 border-l-purple-500', bg: 'bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-zinc-800', emoji: '🚗' },
+                              'Ulaznice': { border: 'border-l-4 border-l-green-500', bg: 'bg-gradient-to-r from-green-50 to-white dark:from-green-950/20 dark:to-zinc-800', emoji: '🎫' },
+                              'Oprema': { border: 'border-l-4 border-l-cyan-500', bg: 'bg-gradient-to-r from-cyan-50 to-white dark:from-cyan-950/20 dark:to-zinc-800', emoji: '🎒' },
+                              'Ostalo': { border: 'border-l-4 border-l-pink-500', bg: 'bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/20 dark:to-zinc-800', emoji: '📦' }
+                            };
+                            return styles[category] || { border: 'border-l-4 border-l-gray-500', bg: 'bg-gradient-to-r from-gray-50 to-white dark:from-gray-950/20 dark:to-zinc-800', emoji: '💰' };
+                          };
+                          
+                          const style = getCategoryStyle(expense.category);
+                          
+                          return (
+                            <div
+                              key={expense.id}
+                              onClick={() => router.push(`/trips/${tripId}/expenses/${expense.id}/edit`)}
+                              className={`${style.bg} ${style.border} rounded-lg p-4 border-y border-r border-zinc-200 dark:border-zinc-700 hover:shadow-lg cursor-pointer transition-all hover:scale-[1.02] duration-200`}
+                            >
+                              <div className="flex items-start gap-4">
+                                <div className="text-3xl flex-shrink-0 mt-1">
+                                  {style.emoji}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-base font-semibold text-black dark:text-white truncate">
+                                    {expense.description || expense.category}
+                                  </h4>
+                                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
+                                    {expense.category}
+                                  </p>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <div className="text-xl font-bold text-black dark:text-white">
+                                    {expense.amount.toFixed(2)}
+                                  </div>
+                                  <div className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+                                    {expense.currency}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
