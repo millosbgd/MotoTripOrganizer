@@ -19,6 +19,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<FuelEntry> FuelEntries { get; set; }
     public DbSet<AccommodationEntry> AccommodationEntries { get; set; }
     public DbSet<ServiceEntry> ServiceEntries { get; set; }
+    public DbSet<NoteEntry> NoteEntries { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
