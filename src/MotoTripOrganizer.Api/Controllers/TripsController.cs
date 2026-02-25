@@ -7,6 +7,7 @@ using MotoTripOrganizer.Infrastructure.Data;
 
 namespace MotoTripOrganizer.Api.Controllers;
 
+// Updated: 2026-02-25 - Service tracking feature added
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
