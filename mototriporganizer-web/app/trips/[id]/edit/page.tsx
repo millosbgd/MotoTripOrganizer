@@ -670,15 +670,15 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                         {groupExpenses.map((expense) => {
                           const getCategoryStyle = (category: string) => {
                             const styles: Record<string, { border: string; bg: string; emoji: string }> = {
-                              'Gorivo': { border: 'border-4 border-red-600', bg: 'bg-gradient-to-r from-red-100 to-white dark:from-red-900/30 dark:to-zinc-800', emoji: '⛽' },
-                              'Hrana': { border: 'border-4 border-orange-600', bg: 'bg-gradient-to-r from-orange-100 to-white dark:from-orange-900/30 dark:to-zinc-800', emoji: '🍔' },
-                              'Smeštaj': { border: 'border-4 border-blue-600', bg: 'bg-gradient-to-r from-blue-100 to-white dark:from-blue-900/30 dark:to-zinc-800', emoji: '🏨' },
-                              'Transport': { border: 'border-4 border-purple-600', bg: 'bg-gradient-to-r from-purple-100 to-white dark:from-purple-900/30 dark:to-zinc-800', emoji: '🚗' },
-                              'Ulaznice': { border: 'border-4 border-green-600', bg: 'bg-gradient-to-r from-green-100 to-white dark:from-green-900/30 dark:to-zinc-800', emoji: '🎫' },
-                              'Oprema': { border: 'border-4 border-cyan-600', bg: 'bg-gradient-to-r from-cyan-100 to-white dark:from-cyan-900/30 dark:to-zinc-800', emoji: '🎒' },
-                              'Ostalo': { border: 'border-4 border-yellow-500', bg: 'bg-gradient-to-r from-yellow-100 to-white dark:from-yellow-900/30 dark:to-zinc-800', emoji: '📦' }
+                              'Gorivo': { border: 'border border-red-600 border-l-8', bg: 'bg-gradient-to-r from-red-100 to-white dark:from-red-900/30 dark:to-zinc-800', emoji: '⛽' },
+                              'Hrana': { border: 'border border-orange-600 border-l-8', bg: 'bg-gradient-to-r from-orange-100 to-white dark:from-orange-900/30 dark:to-zinc-800', emoji: '🍔' },
+                              'Smeštaj': { border: 'border border-blue-600 border-l-8', bg: 'bg-gradient-to-r from-blue-100 to-white dark:from-blue-900/30 dark:to-zinc-800', emoji: '🏨' },
+                              'Transport': { border: 'border border-purple-600 border-l-8', bg: 'bg-gradient-to-r from-purple-100 to-white dark:from-purple-900/30 dark:to-zinc-800', emoji: '🚗' },
+                              'Ulaznice': { border: 'border border-green-600 border-l-8', bg: 'bg-gradient-to-r from-green-100 to-white dark:from-green-900/30 dark:to-zinc-800', emoji: '🎫' },
+                              'Oprema': { border: 'border border-cyan-600 border-l-8', bg: 'bg-gradient-to-r from-cyan-100 to-white dark:from-cyan-900/30 dark:to-zinc-800', emoji: '🎒' },
+                              'Ostalo': { border: 'border border-yellow-500 border-l-8', bg: 'bg-gradient-to-r from-yellow-100 to-white dark:from-yellow-900/30 dark:to-zinc-800', emoji: '📦' }
                             };
-                            return styles[category] || { border: 'border-4 border-gray-600', bg: 'bg-gradient-to-r from-gray-100 to-white dark:from-gray-900/30 dark:to-zinc-800', emoji: '💰' };
+                            return styles[category] || { border: 'border border-gray-600 border-l-8', bg: 'bg-gradient-to-r from-gray-100 to-white dark:from-gray-900/30 dark:to-zinc-800', emoji: '💰' };
                           };
                           
                           const style = getCategoryStyle(expense.category);
