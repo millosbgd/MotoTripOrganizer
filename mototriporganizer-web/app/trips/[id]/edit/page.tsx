@@ -485,25 +485,14 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     // Calculate total amount
     const total = sharedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
     
-    // Calculate equal share per person (including trip owner)
-    const participantCount = members.length + 1; // members + owner
+    // Calculate equal share per person (all members including owner)
+    const participantCount = members.length;
     const sharePerPerson = total / participantCount;
 
     // Calculate how much each person paid
     const payments: Record<number, { userId: number; displayName: string; paid: number; owed: number; balance: number }> = {};
 
-    // Add trip owner
-    if (trip) {
-      payments[trip.userId] = {
-        userId: trip.userId,
-        displayName: trip.ownerDisplayName || 'Vlasnik',
-        paid: 0,
-        owed: sharePerPerson,
-        balance: 0
-      };
-    }
-
-    // Add members
+    // Add all members (including owner)
     members.forEach(member => {
       payments[member.userId] = {
         userId: member.userId,
@@ -516,8 +505,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
     // Sum up payments
     sharedExpenses.forEach(expense => {
-      if (payments[expense.paidBy]) {
-        payments[expense.paidBy].paid += expense.amount;
+      if (payments[expense.paidByUserId]) {
+        payments[expense.paidByUserId].paid += expense.amount;
       }
     });
 
