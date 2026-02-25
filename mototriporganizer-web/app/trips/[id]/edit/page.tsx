@@ -72,6 +72,9 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     content: ''
   });
 
+  // Balance calculation state
+  const [showBalancePanel, setShowBalancePanel] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members'>('general');
   const [isEditMode, setIsEditMode] = useState(true); // true = from edit icon (show only Info & Members), false = from region click (show all except Info & Members)
 
@@ -472,6 +475,88 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     }
   };
 
+  const calculateBalance = () => {
+    const sharedExpenses = expenses.filter(e => e.isShared);
+    
+    if (sharedExpenses.length === 0 || members.length === 0) {
+      return { balances: [], settlements: [] };
+    }
+
+    // Calculate total amount
+    const total = sharedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    
+    // Calculate equal share per person (including trip owner)
+    const participantCount = members.length + 1; // members + owner
+    const sharePerPerson = total / participantCount;
+
+    // Calculate how much each person paid
+    const payments: Record<number, { userId: number; displayName: string; paid: number; owed: number; balance: number }> = {};
+
+    // Add trip owner
+    if (trip) {
+      payments[trip.userId] = {
+        userId: trip.userId,
+        displayName: trip.ownerDisplayName || 'Vlasnik',
+        paid: 0,
+        owed: sharePerPerson,
+        balance: 0
+      };
+    }
+
+    // Add members
+    members.forEach(member => {
+      payments[member.userId] = {
+        userId: member.userId,
+        displayName: member.displayName,
+        paid: 0,
+        owed: sharePerPerson,
+        balance: 0
+      };
+    });
+
+    // Sum up payments
+    sharedExpenses.forEach(expense => {
+      if (payments[expense.paidBy]) {
+        payments[expense.paidBy].paid += expense.amount;
+      }
+    });
+
+    // Calculate balance for each person
+    Object.values(payments).forEach(person => {
+      person.balance = person.paid - person.owed;
+    });
+
+    const balances = Object.values(payments);
+
+    // Calculate settlements (who owes whom)
+    const creditors = balances.filter(p => p.balance > 0.01).sort((a, b) => b.balance - a.balance);
+    const debtors = balances.filter(p => p.balance < -0.01).sort((a, b) => a.balance - b.balance);
+
+    const settlements: { from: string; to: string; amount: number }[] = [];
+
+    let i = 0, j = 0;
+    while (i < creditors.length && j < debtors.length) {
+      const creditor = creditors[i];
+      const debtor = debtors[j];
+      
+      const amount = Math.min(creditor.balance, -debtor.balance);
+      
+      settlements.push({
+        from: debtor.displayName,
+        to: creditor.displayName,
+        amount: amount
+      });
+
+      creditor.balance -= amount;
+      debtor.balance += amount;
+
+      if (Math.abs(creditor.balance) < 0.01) i++;
+      if (Math.abs(debtor.balance) < 0.01) j++;
+    }
+
+    return { balances, settlements, total, sharePerPerson };
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!tripId) return;
@@ -651,7 +736,17 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
           {activeTab === 'sharedExpenses' && (
             <div className="p-6 relative">
-              <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Zajednički troškovi</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-black dark:text-white">Zajednički troškovi</h2>
+                <button
+                  onClick={() => setShowBalancePanel(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+                  title="Prikaži balans"
+                >
+                  <span className="text-2xl font-bold">Σ</span>
+                  <span className="text-sm font-medium">Balans</span>
+                </button>
+              </div>
               
               {loadingExpenses ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Učitavam troškove...</p>
@@ -776,6 +871,150 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Balance Panel Modal */}
+              {showBalancePanel && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowBalancePanel(false)}>
+                  <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="sticky top-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 p-6 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">Σ</span>
+                        <h3 className="text-2xl font-bold text-black dark:text-white">Balans zajedničkih troškova</h3>
+                      </div>
+                      <button
+                        onClick={() => setShowBalancePanel(false)}
+                        className="text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                      {(() => {
+                        const { balances, settlements, total, sharePerPerson } = calculateBalance();
+                        
+                        if (!balances || balances.length === 0) {
+                          return (
+                            <p className="text-center text-zinc-600 dark:text-zinc-400">
+                              Nema zajedničkih troškova ili članova za prikaz balansa.
+                            </p>
+                          );
+                        }
+
+                        return (
+                          <>
+                            {/* Summary */}
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Ukupno troškova</p>
+                                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                  {total?.toFixed(2) || '0.00'} EUR
+                                </p>
+                              </div>
+                              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                                <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Po osobi</p>
+                                <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                  {sharePerPerson?.toFixed(2) || '0.00'} EUR
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Balances Table */}
+                            <div>
+                              <h4 className="text-lg font-semibold text-black dark:text-white mb-3">Pregled po osobi</h4>
+                              <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
+                                <table className="w-full">
+                                  <thead className="bg-zinc-100 dark:bg-zinc-800">
+                                    <tr>
+                                      <th className="text-left p-3 text-sm font-semibold text-black dark:text-white">Ime</th>
+                                      <th className="text-right p-3 text-sm font-semibold text-black dark:text-white">Platio</th>
+                                      <th className="text-right p-3 text-sm font-semibold text-black dark:text-white">Treba da plati</th>
+                                      <th className="text-right p-3 text-sm font-semibold text-black dark:text-white">Balans</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {balances.map((person) => (
+                                      <tr key={person.userId} className="border-t border-zinc-200 dark:border-zinc-700">
+                                        <td className="p-3 text-black dark:text-white font-medium">{person.displayName}</td>
+                                        <td className="p-3 text-right text-black dark:text-white">{person.paid.toFixed(2)} EUR</td>
+                                        <td className="p-3 text-right text-black dark:text-white">{person.owed.toFixed(2)} EUR</td>
+                                        <td className={`p-3 text-right font-semibold ${
+                                          person.balance > 0.01 
+                                            ? 'text-green-600 dark:text-green-400' 
+                                            : person.balance < -0.01 
+                                            ? 'text-red-600 dark:text-red-400' 
+                                            : 'text-zinc-500 dark:text-zinc-400'
+                                        }`}>
+                                          {person.balance > 0.01 ? '+' : ''}{person.balance.toFixed(2)} EUR
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                            {/* Settlements */}
+                            {settlements && settlements.length > 0 && (
+                              <div>
+                                <h4 className="text-lg font-semibold text-black dark:text-white mb-3">Ko kome treba da plati</h4>
+                                <div className="space-y-2">
+                                  {settlements.map((settlement, index) => (
+                                    <div 
+                                      key={index}
+                                      className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+                                    >
+                                      <div className="flex-1">
+                                        <span className="font-semibold text-black dark:text-white">{settlement.from}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        </svg>
+                                      </div>
+                                      <div className="flex-1 text-center">
+                                        <span className="text-xl font-bold text-amber-600 dark:text-amber-400">
+                                          {settlement.amount.toFixed(2)} EUR
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        </svg>
+                                      </div>
+                                      <div className="flex-1 text-right">
+                                        <span className="font-semibold text-black dark:text-white">{settlement.to}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {settlements && settlements.length === 0 && (
+                              <div className="text-center py-6">
+                                <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-3">
+                                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                                <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+                                  Svi su uravnoteženi! 🎉
+                                </p>
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                                  Nema dugovanja između učesnika.
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 </div>
               )}
 
