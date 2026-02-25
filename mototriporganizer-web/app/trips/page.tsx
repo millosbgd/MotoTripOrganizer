@@ -117,23 +117,6 @@ export default function TripsPage() {
         </div>
       </header>
 
-      {/* Info Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 border-b border-blue-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-white text-sm font-medium">
-                🎉 Novo: Sada možeš pratiti servise na putu! Dodato podmazivanje lanca i još mnogo toga.
-              </p>
-            </div>
-            <span className="text-blue-200 text-xs">v2.1.0</span>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Error */}
