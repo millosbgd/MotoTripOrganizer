@@ -546,11 +546,14 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       
       const amount = Math.min(creditor.balance, -debtor.balance);
       
-      settlements.push({
-        from: debtor.displayName,
-        to: creditor.displayName,
-        amount: amount
-      });
+      // Only add settlement if from and to are different people
+      if (debtor.userId !== creditor.userId && amount > 0.01) {
+        settlements.push({
+          from: debtor.displayName,
+          to: creditor.displayName,
+          amount: amount
+        });
+      }
 
       creditor.balance -= amount;
       debtor.balance += amount;
@@ -903,7 +906,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                         return (
                           <>
                             {/* Summary */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4 mb-6">
                               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Ukupno troškova</p>
                                 <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
@@ -918,47 +921,12 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                               </div>
                             </div>
 
-                            {/* Balances Table */}
-                            <div>
-                              <h4 className="text-lg font-semibold text-black dark:text-white mb-3">Pregled po osobi</h4>
-                              <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
-                                <table className="w-full">
-                                  <thead className="bg-zinc-100 dark:bg-zinc-800">
-                                    <tr>
-                                      <th className="text-left p-3 text-sm font-semibold text-black dark:text-white">Ime</th>
-                                      <th className="text-right p-3 text-sm font-semibold text-black dark:text-white">Platio</th>
-                                      <th className="text-right p-3 text-sm font-semibold text-black dark:text-white">Treba da plati</th>
-                                      <th className="text-right p-3 text-sm font-semibold text-black dark:text-white">Balans</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {balances.map((person) => (
-                                      <tr key={person.userId} className="border-t border-zinc-200 dark:border-zinc-700">
-                                        <td className="p-3 text-black dark:text-white font-medium">{person.displayName}</td>
-                                        <td className="p-3 text-right text-black dark:text-white">{person.paid.toFixed(2)} EUR</td>
-                                        <td className="p-3 text-right text-black dark:text-white">{person.owed.toFixed(2)} EUR</td>
-                                        <td className={`p-3 text-right font-semibold ${
-                                          person.balance > 0.01 
-                                            ? 'text-green-600 dark:text-green-400' 
-                                            : person.balance < -0.01 
-                                            ? 'text-red-600 dark:text-red-400' 
-                                            : 'text-zinc-500 dark:text-zinc-400'
-                                        }`}>
-                                          {person.balance > 0.01 ? '+' : ''}{person.balance.toFixed(2)} EUR
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-
                             {/* Settlements */}
                             {settlements && settlements.length > 0 && (
                               <div>
                                 <h4 className="text-lg font-semibold text-black dark:text-white mb-3">Ko kome treba da plati</h4>
                                 <div className="space-y-2">
-                                  {settlements.map((settlement, index) => (
+                                  {settlements.filter(s => s.from !== s.to).map((settlement, index) => (
                                     <div 
                                       key={index}
                                       className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
