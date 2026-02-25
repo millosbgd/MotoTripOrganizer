@@ -1286,65 +1286,98 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Naziv</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tip</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Check-in</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Check-out</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Lokacija</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Iznos</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {accommodationEntries.map((accommodation) => (
-                        <tr 
-                          key={accommodation.id} 
-                          onClick={() => handleEditAccommodation(accommodation)}
-                          className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
-                        >
-                          <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {accommodation.name}
-                            {accommodation.note && (
-                              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{accommodation.note}</div>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {accommodation.accommodationType}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {new Date(accommodation.checkInDate).toLocaleDateString('sr-Latn')}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {new Date(accommodation.checkOutDate).toLocaleDateString('sr-Latn')}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {accommodation.location}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
-                            {accommodation.amount.toFixed(2)} {accommodation.currency}
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteAccommodation(accommodation.id);
-                              }}
-                              className="p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                              title="Obriši"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-6">
+                  {/* Accommodation entries grouped by check-in date */}
+                  {Object.entries(
+                    accommodationEntries.reduce((acc, accommodation) => {
+                      const date = new Date(accommodation.checkInDate).toLocaleDateString('sr-Latn');
+                      if (!acc[date]) acc[date] = [];
+                      acc[date].push(accommodation);
+                      return acc;
+                    }, {} as Record<string, typeof accommodationEntries>)
+                  ).map(([date, accommodations]) => (
+                    <div key={date}>
+                      <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-3 px-1">
+                        {date}
+                      </h3>
+                      <div className="space-y-2">
+                        {accommodations.map((accommodation) => (
+                          <div
+                            key={accommodation.id}
+                            onClick={() => handleEditAccommodation(accommodation)}
+                            className="relative bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-zinc-900 p-4 rounded-lg cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200 border border-blue-600 dark:border-blue-500 border-l-8"
+                          >
+                            <div className="flex items-start gap-4">
+                              {/* Accommodation icon */}
+                              <div className="flex-shrink-0 mt-1">
+                                <svg className="w-6 h-6 text-blue-600 dark:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                              </div>
+                              
+                              {/* Content */}
+                              <div className="flex-grow min-w-0">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-grow min-w-0">
+                                    <h4 className="font-semibold text-black dark:text-white text-base">
+                                      {accommodation.name}
+                                    </h4>
+                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
+                                      {accommodation.accommodationType}
+                                    </p>
+                                    {accommodation.note && (
+                                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                                        {accommodation.note}
+                                      </p>
+                                    )}
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                                      <span className="flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        {accommodation.location}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        {new Date(accommodation.checkInDate).toLocaleDateString('sr-Latn')} - {new Date(accommodation.checkOutDate).toLocaleDateString('sr-Latn')}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Amount and Delete */}
+                                  <div className="flex items-start gap-2 flex-shrink-0">
+                                    <div className="text-right">
+                                      <div className="text-lg font-bold text-black dark:text-white">
+                                        {accommodation.amount.toFixed(2)}
+                                      </div>
+                                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                        {accommodation.currency}
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteAccommodation(accommodation.id);
+                                      }}
+                                      className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                      title="Obriši"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
 
