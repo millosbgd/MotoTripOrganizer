@@ -164,6 +164,26 @@ export interface UpdateServiceEntryDto {
   note?: string;
 }
 
+export interface NoteEntry {
+  id: number;
+  tripId: number;
+  content: string;
+  createdByUserId: number;
+  createdByUserDisplayName: string;
+  updatedByUserId?: number;
+  updatedByUserDisplayName?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateNoteEntryDto {
+  content: string;
+}
+
+export interface UpdateNoteEntryDto {
+  content: string;
+}
+
 // Helper to get auth token
 async function getAuthToken(): Promise<string | null> {
   try {
@@ -568,6 +588,68 @@ export const api = {
 
     if (!response.ok) {
       throw new Error(`Failed to delete service entry: ${response.statusText}`);
+    }
+  },
+
+  // Note Entries
+  async getNoteEntries(tripId: number): Promise<NoteEntry[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/notes`, {
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch note entries: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async getNoteEntry(tripId: number, id: number): Promise<NoteEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/notes/${id}`, {
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch note entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async createNoteEntry(tripId: number, data: CreateNoteEntryDto): Promise<NoteEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/notes`, {
+      method: 'POST',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create note entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async updateNoteEntry(tripId: number, id: number, data: UpdateNoteEntryDto): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/notes/${id}`, {
+      method: 'PUT',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update note entry: ${response.statusText}`);
+    }
+  },
+
+  async deleteNoteEntry(tripId: number, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/notes/${id}`, {
+      method: 'DELETE',
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete note entry: ${response.statusText}`);
     }
   },
 };

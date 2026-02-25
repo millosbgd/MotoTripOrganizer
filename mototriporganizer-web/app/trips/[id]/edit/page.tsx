@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry } from '@/lib/api';
+import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry, NoteEntry } from '@/lib/api';
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -63,6 +63,15 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     note: ''
   });
 
+  // Note state
+  const [noteEntries, setNoteEntries] = useState<NoteEntry[]>([]);
+  const [loadingNotes, setLoadingNotes] = useState(false);
+  const [showNoteForm, setShowNoteForm] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [noteFormData, setNoteFormData] = useState({
+    content: ''
+  });
+
   const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members'>('general');
   const [isEditMode, setIsEditMode] = useState(true); // true = from edit icon (show only Info & Members), false = from region click (show all except Info & Members)
 
@@ -84,6 +93,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         loadFuelEntries(p.id);
         loadAccommodationEntries(p.id);
         loadServiceEntries(p.id);
+        loadNoteEntries(p.id);
       }
     });
   }, []);
@@ -157,6 +167,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       console.error('Failed to load service entries:', err);
     } finally {
       setLoadingService(false);
+    }
+  };
+
+  const loadNoteEntries = async (id: string) => {
+    try {
+      setLoadingNotes(true);
+      const data = await api.getNoteEntries(parseInt(id));
+      setNoteEntries(data);
+    } catch (err) {
+      console.error('Failed to load note entries:', err);
+    } finally {
+      setLoadingNotes(false);
     }
   };
 
@@ -400,6 +422,53 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       setServiceEntries(serviceEntries.filter(s => s.id !== serviceId));
     } catch (err) {
       alert('Greška pri brisanju servisa');
+    }
+  };
+
+  const handleNoteFormSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!tripId || !noteFormData.content.trim()) return;
+
+    try {
+      const noteData = {
+        content: noteFormData.content
+      };
+
+      if (editingNoteId) {
+        await api.updateNoteEntry(parseInt(tripId), editingNoteId, noteData);
+      } else {
+        await api.createNoteEntry(parseInt(tripId), noteData);
+      }
+
+      await loadNoteEntries(tripId);
+      setShowNoteForm(false);
+      setEditingNoteId(null);
+      setNoteFormData({
+        content: ''
+      });
+    } catch (err) {
+      alert('Greška pri čuvanju beleške');
+    }
+  };
+
+  const handleEditNote = (note: NoteEntry) => {
+    setEditingNoteId(note.id);
+    setNoteFormData({
+      content: note.content
+    });
+    setShowNoteForm(true);
+  };
+
+  const handleDeleteNote = async (noteId: number) => {
+    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovu belešku?')) {
+      return;
+    }
+
+    try {
+      await api.deleteNoteEntry(parseInt(tripId), noteId);
+      setNoteEntries(noteEntries.filter(n => n.id !== noteId));
+    } catch (err) {
+      alert('Greška pri brisanju beleške');
     }
   };
 
@@ -1742,9 +1811,167 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
           )}
 
           {activeTab === 'notes' && (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Beleške</h2>
-              <p className="text-zinc-600 dark:text-zinc-400">Funkcionalnost beleški u izradi...</p>
+            <div className="p-6 relative">
+              <div className="flex items-center mb-4">
+                {showNoteForm && (
+                  <button
+                    onClick={() => {
+                      setShowNoteForm(false);
+                      setEditingNoteId(null);
+                      setNoteFormData({
+                        content: ''
+                      });
+                    }}
+                    className="mr-3 text-black dark:text-white hover:text-zinc-600 dark:hover:text-zinc-400"
+                    title="Nazad"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
+                <h2 className="text-xl font-semibold text-black dark:text-white">
+                  {showNoteForm ? (editingNoteId ? 'Izmeni belešku' : 'Dodaj belešku') : 'Beleške'}
+                </h2>
+              </div>
+
+              {showNoteForm && (
+                <form onSubmit={handleNoteFormSubmit} className="mb-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-black dark:text-white mb-1">Sadržaj *</label>
+                    <textarea
+                      value={noteFormData.content}
+                      onChange={(e) => setNoteFormData({ content: e.target.value })}
+                      required
+                      rows={6}
+                      placeholder="Unesite belešku..."
+                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNoteForm(false);
+                        setEditingNoteId(null);
+                        setNoteFormData({
+                          content: ''
+                        });
+                      }}
+                      className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      Otkaži
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      {editingNoteId ? 'Sačuvaj' : 'Dodaj'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {!showNoteForm && (
+                <div>
+                  {loadingNotes ? (
+                    <p className="text-zinc-600 dark:text-zinc-400">Učitavanje...</p>
+                  ) : noteEntries.length === 0 ? (
+                    <p className="text-zinc-600 dark:text-zinc-400">Nema beleški.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {noteEntries.map((note) => {
+                        return (
+                          <div
+                            key={note.id}
+                            onClick={() => handleEditNote(note)}
+                            className="border border-indigo-600 border-l-8 bg-gradient-to-r from-indigo-100 to-white dark:from-indigo-900/30 dark:to-zinc-800 rounded-lg p-4 hover:shadow-lg cursor-pointer transition-all hover:scale-[1.02] duration-200 relative"
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0 mt-1 text-indigo-600">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-base text-black dark:text-white whitespace-pre-wrap">
+                                  {note.content}
+                                </p>
+                                <div className="mt-3 space-y-1">
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    Dodao: <span className="font-medium">{note.createdByUserDisplayName}</span>
+                                    {' '} - {' '}
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    {new Date(note.createdAt).toLocaleDateString('sr-Latn', { 
+                                      year: 'numeric', 
+                                      month: 'short', 
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </p>
+                                  {note.updatedAt && note.updatedByUserDisplayName && (
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                      </svg>
+                                      Izmenio: <span className="font-medium">{note.updatedByUserDisplayName}</span>
+                                      {' '} - {' '}
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                      </svg>
+                                      {new Date(note.updatedAt).toLocaleDateString('sr-Latn', { 
+                                        year: 'numeric', 
+                                        month: 'short', 
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteNote(note.id);
+                                  }}
+                                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                  title="Obriši"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Floating Action Button */}
+              {!showNoteForm && (
+                <button
+                  onClick={() => setShowNoteForm(true)}
+                  className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                  title="Dodaj belešku"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              )}
             </div>
           )}
 
