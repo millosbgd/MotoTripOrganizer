@@ -582,7 +582,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
           {activeTab === 'sharedExpenses' && (
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Zajednički troškovi</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-black dark:text-white">Zajednički troškovi</h2>
+                <button
+                  onClick={() => router.push(`/trips/${tripId}/expenses/new?shared=true`)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Dodaj trošak
+                </button>
+              </div>
               
               {loadingExpenses ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Učitavam troškove...</p>
@@ -714,7 +725,18 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
           {activeTab === 'personalExpenses' && (
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Sopstveni troškovi</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-black dark:text-white">Sopstveni troškovi</h2>
+                <button
+                  onClick={() => router.push(`/trips/${tripId}/expenses/new?shared=false`)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Dodaj trošak
+                </button>
+              </div>
               
               {loadingExpenses ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Učitavam troškove...</p>
@@ -842,6 +864,29 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
             <div className="p-6 relative">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-black dark:text-white">Gorivo</h2>
+                {!showFuelForm && (
+                  <button
+                    onClick={() => {
+                      setEditingFuelId(null);
+                      setFuelFormData({
+                        date: new Date().toISOString().split('T')[0],
+                        quantity: '',
+                        amount: '',
+                        currency: 'EUR',
+                        mileage: '',
+                        location: '',
+                        note: ''
+                      });
+                      setShowFuelForm(true);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Dodaj sipanje
+                  </button>
+                )}
               </div>
 
               {showFuelForm && (
@@ -1090,29 +1135,6 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   ))}
                 </div>
               ))}
-
-              {/* Floating Action Button */}
-              <button
-                onClick={() => {
-                  setEditingFuelId(null);
-                  setFuelFormData({
-                    date: new Date().toISOString().split('T')[0],
-                    quantity: '',
-                    amount: '',
-                    currency: 'EUR',
-                    mileage: '',
-                    location: '',
-                    note: ''
-                  });
-                  setShowFuelForm(true);
-                }}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-10"
-                title="Dodaj sipanje"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
             </div>
           )}
 
@@ -1120,6 +1142,30 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
             <div className="p-6 relative">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-black dark:text-white">Smeštaj</h2>
+                {!showAccommodationForm && (
+                  <button
+                    onClick={() => {
+                      setEditingAccommodationId(null);
+                      setAccommodationFormData({
+                        name: '',
+                        accommodationType: 'Hotel',
+                        checkInDate: new Date().toISOString().split('T')[0],
+                        checkOutDate: new Date().toISOString().split('T')[0],
+                        amount: '',
+                        currency: 'EUR',
+                        location: '',
+                        note: ''
+                      });
+                      setShowAccommodationForm(true);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Dodaj smeštaj
+                  </button>
+                )}
               </div>
 
               {showAccommodationForm && (
@@ -1380,30 +1426,6 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   ))}
                 </div>
               ))}
-
-              {/* Floating Action Button */}
-              <button
-                onClick={() => {
-                  setEditingAccommodationId(null);
-                  setAccommodationFormData({
-                    name: '',
-                    accommodationType: 'Hotel',
-                    checkInDate: new Date().toISOString().split('T')[0],
-                    checkOutDate: new Date().toISOString().split('T')[0],
-                    amount: '',
-                    currency: 'EUR',
-                    location: '',
-                    note: ''
-                  });
-                  setShowAccommodationForm(true);
-                }}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-10"
-                title="Dodaj smeštaj"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
             </div>
           )}
 
