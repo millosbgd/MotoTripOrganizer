@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry } from '@/lib/api';
@@ -669,7 +669,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       <div className="space-y-3">
                         {groupExpenses.map((expense) => {
                           const getCategoryStyle = (category: string) => {
-                            const styles: Record<string, { border: string; bg: string; iconColor: string; icon: JSX.Element }> = {
+                            const styles: Record<string, { border: string; bg: string; iconColor: string; icon: ReactNode }> = {
                               'Gorivo': { 
                                 border: 'border border-red-600 border-l-8', 
                                 bg: 'bg-gradient-to-r from-red-100 to-white dark:from-red-900/30 dark:to-zinc-800', 
