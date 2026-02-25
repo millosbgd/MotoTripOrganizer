@@ -595,7 +595,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       .filter(e => e.isShared)
                       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                       .reduce((groups, expense) => {
-                        const date = new Date(expense.date).toLocaleDateString('sr-RS', { 
+                        const date = new Date(expense.date).toLocaleDateString('sr-Latn', { 
                           year: 'numeric', 
                           month: 'long', 
                           day: 'numeric' 
@@ -650,7 +650,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       .filter(e => !e.isShared)
                       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                       .reduce((groups, expense) => {
-                        const date = new Date(expense.date).toLocaleDateString('sr-RS', { 
+                        const date = new Date(expense.date).toLocaleDateString('sr-Latn', { 
                           year: 'numeric', 
                           month: 'long', 
                           day: 'numeric' 
@@ -898,7 +898,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                           className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
                         >
                           <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {new Date(fuel.date).toLocaleDateString('sr-RS')}
+                            {new Date(fuel.date).toLocaleDateString('sr-Latn')}
                           </td>
                           <td className="py-3 px-4 text-sm text-black dark:text-white">
                             {fuel.location}
@@ -1164,10 +1164,10 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                             {accommodation.accommodationType}
                           </td>
                           <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {new Date(accommodation.checkInDate).toLocaleDateString('sr-RS')}
+                            {new Date(accommodation.checkInDate).toLocaleDateString('sr-Latn')}
                           </td>
                           <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {new Date(accommodation.checkOutDate).toLocaleDateString('sr-RS')}
+                            {new Date(accommodation.checkOutDate).toLocaleDateString('sr-Latn')}
                           </td>
                           <td className="py-3 px-4 text-sm text-black dark:text-white">
                             {accommodation.location}
@@ -1419,7 +1419,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                               onClick={() => handleEditService(service)}
                             >
                               <td className="p-2 text-black dark:text-white">
-                                {new Date(service.serviceDate).toLocaleDateString('sr-RS')}
+                                {new Date(service.serviceDate).toLocaleDateString('sr-Latn')}
                               </td>
                               <td className="p-2 text-black dark:text-white">{service.serviceType}</td>
                               <td className="p-2 text-black dark:text-white">{service.description}</td>
