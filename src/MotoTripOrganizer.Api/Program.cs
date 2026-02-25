@@ -7,6 +7,7 @@ using MotoTripOrganizer.Infrastructure.Data;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+// Testing GitHub Actions deployment - 2026-02-25
 
 // ===== Serilog Configuration =====
 Log.Logger = new LoggerConfiguration()
