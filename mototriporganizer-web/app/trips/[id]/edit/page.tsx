@@ -709,6 +709,17 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   ))}
                 </div>
               )}
+
+              {/* Floating Action Button */}
+              <button
+                onClick={() => router.push(`/trips/${tripId}/expenses/new?shared=true`)}
+                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                title="Dodaj trošak"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
             </div>
           )}
 
@@ -835,6 +846,17 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   ))}
                 </div>
               )}
+
+              {/* Floating Action Button */}
+              <button
+                onClick={() => router.push(`/trips/${tripId}/expenses/new?shared=false`)}
+                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                title="Dodaj trošak"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
             </div>
           )}
 
