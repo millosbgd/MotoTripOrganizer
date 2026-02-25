@@ -994,65 +994,100 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Datum</th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Lokacija</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Količina</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Iznos</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Cena/L</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Kilometraža</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fuelEntries.map((fuel) => (
-                        <tr 
-                          key={fuel.id} 
-                          onClick={() => handleEditFuel(fuel)}
-                          className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
-                        >
-                          <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {new Date(fuel.date).toLocaleDateString('sr-Latn')}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-black dark:text-white">
-                            {fuel.location}
-                            {fuel.note && (
-                              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{fuel.note}</div>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
-                            {fuel.quantity.toFixed(2)} L
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
-                            {fuel.amount.toFixed(2)} {fuel.currency}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
-                            {fuel.unitPrice.toFixed(2)} {fuel.currency}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-right text-black dark:text-white">
-                            {fuel.mileage.toLocaleString()} km
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteFuel(fuel.id);
-                              }}
-                              className="p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                              title="Obriši"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-6">
+                  {/* Fuel entries grouped by date */}
+                  {Object.entries(
+                    fuelEntries.reduce((acc, fuel) => {
+                      const date = new Date(fuel.date).toLocaleDateString('sr-Latn');
+                      if (!acc[date]) acc[date] = [];
+                      acc[date].push(fuel);
+                      return acc;
+                    }, {} as Record<string, typeof fuelEntries>)
+                  ).map(([date, fuels]) => (
+                    <div key={date}>
+                      <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-3 px-1">
+                        {date}
+                      </h3>
+                      <div className="space-y-2">
+                        {fuels.map((fuel) => (
+                          <div
+                            key={fuel.id}
+                            onClick={() => handleEditFuel(fuel)}
+                            className="relative bg-gradient-to-r from-red-50 to-white dark:from-red-950/20 dark:to-zinc-900 p-4 rounded-lg cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200 border border-red-600 dark:border-red-500 border-l-8"
+                          >
+                            <div className="flex items-start gap-4">
+                              {/* Fuel icon */}
+                              <div className="flex-shrink-0 mt-1">
+                                <svg className="w-6 h-6 text-red-600 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                              </div>
+                              
+                              {/* Content */}
+                              <div className="flex-grow min-w-0">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-grow min-w-0">
+                                    <h4 className="font-semibold text-black dark:text-white text-base">
+                                      {fuel.location}
+                                    </h4>
+                                    {fuel.note && (
+                                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                                        {fuel.note}
+                                      </p>
+                                    )}
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                                      <span className="flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                        </svg>
+                                        {fuel.quantity.toFixed(2)} L
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {fuel.unitPrice.toFixed(2)} {fuel.currency}/L
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        {fuel.mileage.toLocaleString()} km
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Amount and Delete */}
+                                  <div className="flex items-start gap-2 flex-shrink-0">
+                                    <div className="text-right">
+                                      <div className="text-lg font-bold text-black dark:text-white">
+                                        {fuel.amount.toFixed(2)}
+                                      </div>
+                                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                        {fuel.currency}
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteFuel(fuel.id);
+                                      }}
+                                      className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                      title="Obriši"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
 
