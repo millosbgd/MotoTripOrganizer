@@ -476,93 +476,124 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const calculateBalance = () => {
+    // Input: lista pripadnika i lista troškova
     const sharedExpenses = expenses.filter(e => e.isShared);
     
     if (sharedExpenses.length === 0 || members.length === 0) {
-      return { balances: [], settlements: [] };
+      return { balances: [], settlements: [], total: 0, sharePerPerson: 0 };
     }
 
-    // Calculate total amount
-    const total = sharedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    
-    // Calculate equal share per person (all members including owner)
     const participantCount = members.length;
+    const total = sharedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
     const sharePerPerson = total / participantCount;
 
-    // Calculate how much each person paid
-    const payments: Record<number, { userId: number; displayName: string; paid: number; owed: number; balance: number }> = {};
+    // Inicijalizuj strukturu za svakog učesnika
+    const participants: Record<number, { 
+      userId: number; 
+      displayName: string; 
+      paid: number; 
+      owes: number; 
+      net: number;
+    }> = {};
 
-    // Add all members (including owner)
+    // Dodaj sve članove tripa
     members.forEach(member => {
-      payments[member.userId] = {
+      participants[member.userId] = {
         userId: member.userId,
         displayName: member.displayName,
         paid: 0,
-        owed: sharePerPerson,
-        balance: 0
+        owes: 0,
+        net: 0
       };
     });
 
-    // Sum up payments and handle people who paid but aren't current members
+    // Izračunaj koliko je svako PLATIO
     sharedExpenses.forEach(expense => {
-      if (payments[expense.paidByUserId]) {
-        payments[expense.paidByUserId].paid += expense.amount;
+      if (participants[expense.paidByUserId]) {
+        participants[expense.paidByUserId].paid += expense.amount;
       } else {
-        // Someone who paid but is not in current members list
-        payments[expense.paidByUserId] = {
+        // Neko je platio ali nije u trenutnim članovima - dodaj ga
+        participants[expense.paidByUserId] = {
           userId: expense.paidByUserId,
           displayName: expense.paidByDisplayName,
           paid: expense.amount,
-          owed: sharePerPerson,
-          balance: 0
+          owes: 0,
+          net: 0
         };
       }
     });
 
-    // Calculate balance for each person
-    Object.values(payments).forEach(person => {
-      person.balance = person.paid - person.owed;
+    // Izračunaj koliko svako DUGUJE (njegov deo svih zajedničkih troškova)
+    Object.values(participants).forEach(person => {
+      person.owes = sharePerPerson;
     });
 
-    const balances = Object.values(payments);
+    // Izračunaj NET = Paid - Owes za svakog (zaokruži na 2 decimale)
+    Object.values(participants).forEach(person => {
+      person.net = Math.round((person.paid - person.owes) * 100) / 100;
+    });
 
-    // Calculate settlements (who owes whom) - clone objects to avoid mutation
-    const creditors = balances
-      .filter(p => p.balance > 0.01)
-      .map(p => ({ ...p })) // Clone to avoid mutating original
-      .sort((a, b) => b.balance - a.balance);
-    
+    const balances = Object.values(participants);
+
+    // Provera: zbir svih Net treba da bude ~0
+    const netSum = balances.reduce((sum, p) => sum + p.net, 0);
+    if (Math.abs(netSum) > 0.01) {
+      console.warn(`Net sum validation failed: ${netSum.toFixed(2)} (should be ~0)`);
+    }
+
+    // Greedy matching za settlements
+    // Debtors: Net < 0 (duguju)
     const debtors = balances
-      .filter(p => p.balance < -0.01)
-      .map(p => ({ ...p })) // Clone to avoid mutating original
-      .sort((a, b) => a.balance - b.balance);
+      .filter(p => p.net < -0.01)
+      .map(p => ({ ...p })) // Clone
+      .sort((a, b) => a.net - b.net); // Najmanji (najveći dug) prvi
+
+    // Creditors: Net > 0 (treba da dobiju)
+    const creditors = balances
+      .filter(p => p.net > 0.01)
+      .map(p => ({ ...p })) // Clone
+      .sort((a, b) => b.net - a.net); // Najveći (najveće potraživanje) prvi
 
     const settlements: { from: string; to: string; amount: number }[] = [];
 
     let i = 0, j = 0;
-    while (i < creditors.length && j < debtors.length) {
-      const creditor = creditors[i];
-      const debtor = debtors[j];
+    while (i < debtors.length && j < creditors.length) {
+      const debtor = debtors[i];
+      const creditor = creditors[j];
       
-      const amount = Math.min(creditor.balance, -debtor.balance);
+      // Isplati min(dug, potraživanje)
+      const amount = Math.min(-debtor.net, creditor.net);
+      const roundedAmount = Math.round(amount * 100) / 100;
       
-      // Only add settlement if from and to are different people
-      if (debtor.userId !== creditor.userId && amount > 0.01) {
+      if (roundedAmount > 0.01) {
         settlements.push({
           from: debtor.displayName,
           to: creditor.displayName,
-          amount: amount
+          amount: roundedAmount
         });
       }
 
-      creditor.balance -= amount;
-      debtor.balance += amount;
+      // UmanjiBalanse
+      debtor.net += roundedAmount;
+      creditor.net -= roundedAmount;
 
-      if (Math.abs(creditor.balance) < 0.01) i++;
-      if (Math.abs(debtor.balance) < 0.01) j++;
+      // Pomeri pokazivače kad je neko na 0
+      if (Math.abs(debtor.net) < 0.01) i++;
+      if (Math.abs(creditor.net) < 0.01) j++;
     }
 
-    return { balances, settlements, total, sharePerPerson };
+    return { 
+      balances: balances.map(b => ({
+        userId: b.userId,
+        displayName: b.displayName,
+        paid: Math.round(b.paid * 100) / 100,
+        owed: Math.round(b.owes * 100) / 100,
+        balance: b.net
+      })), 
+      settlements, 
+      total: Math.round(total * 100) / 100, 
+      sharePerPerson: Math.round(sharePerPerson * 100) / 100 
+    };
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
