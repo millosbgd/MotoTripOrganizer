@@ -3,7 +3,7 @@
 # Usage: .\deploy-all.ps1
 
 Write-Host "🚀 Starting full deployment..." -ForegroundColor Cyan
-# Updated: 2026-01-05
+# Updated: 2026-02-25 - Testing GitHub Actions integration
 Write-Host ""
 
 # Configuration
