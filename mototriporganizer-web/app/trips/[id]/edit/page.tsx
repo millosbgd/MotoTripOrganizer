@@ -669,16 +669,56 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       <div className="space-y-3">
                         {groupExpenses.map((expense) => {
                           const getCategoryStyle = (category: string) => {
-                            const styles: Record<string, { border: string; bg: string; emoji: string }> = {
-                              'Gorivo': { border: 'border border-red-600 border-l-8', bg: 'bg-gradient-to-r from-red-100 to-white dark:from-red-900/30 dark:to-zinc-800', emoji: '⛽' },
-                              'Hrana': { border: 'border border-orange-600 border-l-8', bg: 'bg-gradient-to-r from-orange-100 to-white dark:from-orange-900/30 dark:to-zinc-800', emoji: '🍔' },
-                              'Smeštaj': { border: 'border border-blue-600 border-l-8', bg: 'bg-gradient-to-r from-blue-100 to-white dark:from-blue-900/30 dark:to-zinc-800', emoji: '🏨' },
-                              'Transport': { border: 'border border-purple-600 border-l-8', bg: 'bg-gradient-to-r from-purple-100 to-white dark:from-purple-900/30 dark:to-zinc-800', emoji: '🚗' },
-                              'Ulaznice': { border: 'border border-green-600 border-l-8', bg: 'bg-gradient-to-r from-green-100 to-white dark:from-green-900/30 dark:to-zinc-800', emoji: '🎫' },
-                              'Oprema': { border: 'border border-cyan-600 border-l-8', bg: 'bg-gradient-to-r from-cyan-100 to-white dark:from-cyan-900/30 dark:to-zinc-800', emoji: '🎒' },
-                              'Ostalo': { border: 'border border-yellow-500 border-l-8', bg: 'bg-gradient-to-r from-yellow-100 to-white dark:from-yellow-900/30 dark:to-zinc-800', emoji: '📦' }
+                            const styles: Record<string, { border: string; bg: string; iconColor: string; icon: JSX.Element }> = {
+                              'Gorivo': { 
+                                border: 'border border-red-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-red-100 to-white dark:from-red-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-red-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 2h10v18H3z"/><path strokeLinecap="round" strokeLinejoin="round" d="M13 6h2a2 2 0 012 2v10a2 2 0 01-2 2h-1"/><path strokeLinecap="round" strokeLinejoin="round" d="M17 10h3"/><circle cx="8" cy="10" r="2"/></svg>
+                              },
+                              'Hrana': { 
+                                border: 'border border-orange-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-orange-100 to-white dark:from-orange-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-orange-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 2v7c0 1.1.9 2 2 2h2"/><path strokeLinecap="round" strokeLinejoin="round" d="M7 2v20"/><path strokeLinecap="round" strokeLinejoin="round" d="M21 15V2M17 15V2"/></svg>
+                              },
+                              'Smeštaj': { 
+                                border: 'border border-blue-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-blue-100 to-white dark:from-blue-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-blue-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path strokeLinecap="round" strokeLinejoin="round" d="M9 22V12h6v10"/></svg>
+                              },
+                              'Transport': { 
+                                border: 'border border-purple-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-purple-100 to-white dark:from-purple-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-purple-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 17h14v-5H5v5z"/><path strokeLinecap="round" strokeLinejoin="round" d="M3 17h2m14 0h2M7 21a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z"/><path strokeLinecap="round" strokeLinejoin="round" d="M5 12V6l2-3h10l2 3v6"/></svg>
+                              },
+                              'Ulaznice': { 
+                                border: 'border border-green-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-green-100 to-white dark:from-green-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-green-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12M6 10h1M6 14h1M17 10h1M17 14h1"/></svg>
+                              },
+                              'Oprema': { 
+                                border: 'border border-cyan-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-cyan-100 to-white dark:from-cyan-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-cyan-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 6H9M19 6a2 2 0 012 2v10a2 2 0 01-2 2H9a2 2 0 01-2-2V8a2 2 0 012-2M19 6V4a1 1 0 00-1-1H6a1 1 0 00-1 1v2"/><rect x="3" y="8" width="4" height="10" rx="1"/></svg>
+                              },
+                              'Ostalo': { 
+                                border: 'border border-yellow-500 border-l-8', 
+                                bg: 'bg-gradient-to-r from-yellow-100 to-white dark:from-yellow-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-yellow-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h8M12 8v8"/></svg>
+                              }
                             };
-                            return styles[category] || { border: 'border border-gray-600 border-l-8', bg: 'bg-gradient-to-r from-gray-100 to-white dark:from-gray-900/30 dark:to-zinc-800', emoji: '💰' };
+                            return styles[category] || { 
+                              border: 'border border-gray-600 border-l-8', 
+                              bg: 'bg-gradient-to-r from-gray-100 to-white dark:from-gray-900/30 dark:to-zinc-800', 
+                              iconColor: 'text-gray-600',
+                              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01"/></svg>
+                            };
                           };
                           
                           const style = getCategoryStyle(expense.category);
@@ -690,8 +730,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                               className={`${style.bg} ${style.border} rounded-lg p-4 hover:shadow-lg cursor-pointer transition-all hover:scale-[1.02] duration-200`}
                             >
                               <div className="flex items-start gap-4">
-                                <div className="text-3xl flex-shrink-0 mt-1">
-                                  {style.emoji}
+                                <div className={`flex-shrink-0 mt-1 ${style.iconColor}`}>
+                                  {style.icon}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <h4 className="text-base font-semibold text-black dark:text-white truncate">
