@@ -1605,56 +1605,122 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   ) : serviceEntries.length === 0 ? (
                     <p className="text-zinc-600 dark:text-zinc-400">Nema evidentiranih servisa.</p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="border-b border-zinc-300 dark:border-zinc-700">
-                            <th className="text-left p-2 text-black dark:text-white">Datum</th>
-                            <th className="text-left p-2 text-black dark:text-white">Tip</th>
-                            <th className="text-left p-2 text-black dark:text-white">Opis</th>
-                            <th className="text-left p-2 text-black dark:text-white">Iznos</th>
-                            <th className="text-left p-2 text-black dark:text-white">Lokacija</th>
-                            <th className="text-left p-2 text-black dark:text-white">Kilometraža</th>
-                            <th className="w-12 p-2"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {serviceEntries.map((service) => (
-                            <tr
-                              key={service.id}
-                              className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-                              onClick={() => handleEditService(service)}
-                            >
-                              <td className="p-2 text-black dark:text-white">
-                                {new Date(service.serviceDate).toLocaleDateString('sr-Latn')}
-                              </td>
-                              <td className="p-2 text-black dark:text-white">{service.serviceType}</td>
-                              <td className="p-2 text-black dark:text-white">{service.description}</td>
-                              <td className="p-2 text-black dark:text-white">
-                                {service.amount.toFixed(2)} {service.currency}
-                              </td>
-                              <td className="p-2 text-black dark:text-white">{service.location}</td>
-                              <td className="p-2 text-black dark:text-white">
-                                {service.mileage ? `${service.mileage} km` : '-'}
-                              </td>
-                              <td className="p-2">
+                    <div className="space-y-3">
+                      {serviceEntries.map((service) => {
+                        const getServiceStyle = (type: string) => {
+                          const styles: Record<string, { border: string; bg: string; iconColor: string; icon: React.ReactNode }> = {
+                            'Promena ulja': {
+                              border: 'border border-amber-600 border-l-8',
+                              bg: 'bg-gradient-to-r from-amber-100 to-white dark:from-amber-900/30 dark:to-zinc-800',
+                              iconColor: 'text-amber-600',
+                              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 3v1m0 0a3 3 0 106 0M9 4h6m-6 0V3m6 1V3M7 7h10M7 7v10a2 2 0 002 2h6a2 2 0 002-2V7M7 7H5m14 0h2M9 11v4m6-4v4"/></svg>
+                            },
+                            'Promena guma': {
+                              border: 'border border-slate-600 border-l-8',
+                              bg: 'bg-gradient-to-r from-slate-100 to-white dark:from-slate-900/30 dark:to-zinc-800',
+                              iconColor: 'text-slate-600',
+                              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m0 14v2M3 12h2m14 0h2"/></svg>
+                            },
+                            'Servis kočnica': {
+                              border: 'border border-red-600 border-l-8',
+                              bg: 'bg-gradient-to-r from-red-100 to-white dark:from-red-900/30 dark:to-zinc-800',
+                              iconColor: 'text-red-600',
+                              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 8V4m0 16v-4m4-4h4M4 12h4"/></svg>
+                            },
+                            'Podmazivanje lanca': {
+                              border: 'border border-lime-600 border-l-8',
+                              bg: 'bg-gradient-to-r from-lime-100 to-white dark:from-lime-900/30 dark:to-zinc-800',
+                              iconColor: 'text-lime-600',
+                              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                            },
+                            'Ostalo': {
+                              border: 'border border-purple-600 border-l-8',
+                              bg: 'bg-gradient-to-r from-purple-100 to-white dark:from-purple-900/30 dark:to-zinc-800',
+                              iconColor: 'text-purple-600',
+                              icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            }
+                          };
+                          return styles[type] || {
+                            border: 'border border-gray-600 border-l-8',
+                            bg: 'bg-gradient-to-r from-gray-100 to-white dark:from-gray-900/30 dark:to-zinc-800',
+                            iconColor: 'text-gray-600',
+                            icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01"/></svg>
+                          };
+                        };
+                        
+                        const style = getServiceStyle(service.serviceType);
+                        
+                        return (
+                          <div
+                            key={service.id}
+                            onClick={() => handleEditService(service)}
+                            className={`${style.bg} ${style.border} rounded-lg p-4 hover:shadow-lg cursor-pointer transition-all hover:scale-[1.02] duration-200 relative`}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className={`flex-shrink-0 mt-1 ${style.iconColor}`}>
+                                {style.icon}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-base font-semibold text-black dark:text-white">
+                                  {service.description}
+                                </h4>
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
+                                  {service.serviceType}
+                                </p>
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    {new Date(service.serviceDate).toLocaleDateString('sr-Latn')}
+                                  </p>
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    {service.location}
+                                  </p>
+                                  {service.mileage && (
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2"/>
+                                      </svg>
+                                      {service.mileage} km
+                                    </p>
+                                  )}
+                                  {service.note && (
+                                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-2 italic">
+                                      {service.note}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-xl font-bold text-black dark:text-white">
+                                  {service.amount.toFixed(2)}
+                                </div>
+                                <div className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+                                  {service.currency}
+                                </div>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteService(service.id);
                                   }}
-                                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                  className="mt-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                   title="Obriši"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
                                 </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
