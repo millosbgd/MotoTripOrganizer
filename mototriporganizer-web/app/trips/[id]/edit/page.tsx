@@ -725,17 +725,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
           {activeTab === 'sharedExpenses' && (
             <div className="p-6 relative">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-black dark:text-white">Zajednički troškovi</h2>
-                <button
-                  onClick={() => setShowBalancePanel(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
-                  title="Prikaži balans"
-                >
-                  <span className="text-2xl font-bold">Σ</span>
-                  <span className="text-sm font-medium">Balans</span>
-                </button>
-              </div>
+              <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Zajednički troškovi</h2>
               
               {loadingExpenses ? (
                 <p className="text-zinc-600 dark:text-zinc-400">Učitavam troškove...</p>
@@ -1007,7 +997,14 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                 </div>
               )}
 
-              {/* Floating Action Button */}
+              {/* Floating Action Buttons */}
+              <button
+                onClick={() => setShowBalancePanel(true)}
+                className="fixed bottom-8 right-24 w-14 h-14 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                title="Prikaži balans"
+              >
+                <span className="text-2xl font-bold">Σ</span>
+              </button>
               <button
                 onClick={() => router.push(`/trips/${tripId}/expenses/new?shared=true`)}
                 className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
