@@ -857,6 +857,12 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                                 iconColor: 'text-cyan-600',
                                 icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 6H9M19 6a2 2 0 012 2v10a2 2 0 01-2 2H9a2 2 0 01-2-2V8a2 2 0 012-2M19 6V4a1 1 0 00-1-1H6a1 1 0 00-1 1v2"/><rect x="3" y="8" width="4" height="10" rx="1"/></svg>
                               },
+                              'Poslovna pratnja': { 
+                                border: 'border border-indigo-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-indigo-100 to-white dark:from-indigo-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-indigo-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><rect x="4" y="7" width="16" height="12" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 12v3"/></svg>
+                              },
                               'Ostalo': { 
                                 border: 'border border-yellow-500 border-l-8', 
                                 bg: 'bg-gradient-to-r from-yellow-100 to-white dark:from-yellow-900/30 dark:to-zinc-800', 
@@ -1119,6 +1125,12 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                                 bg: 'bg-gradient-to-r from-cyan-100 to-white dark:from-cyan-900/30 dark:to-zinc-800', 
                                 iconColor: 'text-cyan-600',
                                 icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 6H9M19 6a2 2 0 012 2v10a2 2 0 01-2 2H9a2 2 0 01-2-2V8a2 2 0 012-2M19 6V4a1 1 0 00-1-1H6a1 1 0 00-1 1v2"/><rect x="3" y="8" width="4" height="10" rx="1"/></svg>
+                              },
+                              'Poslovna pratnja': { 
+                                border: 'border border-indigo-600 border-l-8', 
+                                bg: 'bg-gradient-to-r from-indigo-100 to-white dark:from-indigo-900/30 dark:to-zinc-800', 
+                                iconColor: 'text-indigo-600',
+                                icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><rect x="4" y="7" width="16" height="12" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 12v3"/></svg>
                               },
                               'Ostalo': { 
                                 border: 'border border-yellow-500 border-l-8', 

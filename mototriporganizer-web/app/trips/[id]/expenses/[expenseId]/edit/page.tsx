@@ -215,6 +215,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
                 <option value="Putarina">Putarina</option>
                 <option value="Servis">Servis</option>
                 <option value="Oprema">Oprema</option>
+                <option value="Poslovna pratnja">Poslovna pratnja</option>
                 <option value="Ostalo">Ostalo</option>
               </select>
             </div>
