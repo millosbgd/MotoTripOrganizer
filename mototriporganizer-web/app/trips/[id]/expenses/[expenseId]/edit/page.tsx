@@ -42,7 +42,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!tripId || !expenseId) return;
+    if (!tripId || !expenseId || !expense) return;
 
     const formData = new FormData(e.currentTarget);
     
@@ -52,6 +52,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       description: formData.get('description') as string,
       amount: parseFloat(formData.get('amount') as string),
       currency: formData.get('currency') as string || 'EUR',
+      isShared: expense.isShared,
     };
 
     try {
