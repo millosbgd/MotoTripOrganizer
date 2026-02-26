@@ -1579,7 +1579,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                                   <div className="flex-1">
                                     <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Ukupna kilometraža</p>
                                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                                      {stats.totalKm.toLocaleString()} km
+                                      {stats.totalKm!.toLocaleString()} km
                                     </p>
                                   </div>
                                 </div>
@@ -1593,7 +1593,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                                   <div className="flex-1">
                                     <p className="text-sm text-green-600 dark:text-green-400 font-medium">Ukupna količina goriva</p>
                                     <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                                      {stats.totalFuel.toFixed(2)} L
+                                      {stats.totalFuel!.toFixed(2)} L
                                     </p>
                                   </div>
                                 </div>
@@ -1607,7 +1607,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                                   <div className="flex-1">
                                     <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">Prosečna potrošnja</p>
                                     <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
-                                      {stats.avgConsumption.toFixed(2)} L/100km
+                                      {stats.avgConsumption!.toFixed(2)} L/100km
                                     </p>
                                   </div>
                                 </div>
@@ -1617,7 +1617,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                             {/* Additional Info */}
                             <div className="text-center pt-4 border-t border-zinc-200 dark:border-zinc-700">
                               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                Statistika zasnovana na {stats.entryCount} {stats.entryCount === 1 ? 'sipanju' : stats.entryCount < 5 ? 'sipanja' : 'sipanja'}
+                                Statistika zasnovana na {stats.entryCount!} {stats.entryCount === 1 ? 'sipanju' : stats.entryCount! < 5 ? 'sipanja' : 'sipanja'}
                               </p>
                             </div>
                           </div>
