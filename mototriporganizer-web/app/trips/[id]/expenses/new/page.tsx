@@ -17,7 +17,7 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
   const [error, setError] = useState<string | null>(null);
   const [tripId, setTripId] = useState<string | null>(null);
   const [members, setMembers] = useState<TripMember[]>([]);
-  const isShared = searchParams.get('isShared') === 'true';
+  const isShared = searchParams.get('shared') === 'true';
 
   useEffect(() => {
     params.then(p => {
@@ -85,15 +85,6 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
   const currentUser = members.find(m => m.isCurrentUser);
   const dropdownDefaultValue = currentUser?.userId.toString() || (members.length > 0 ? members[0].userId.toString() : '');
 
-  console.log('=== NEW EXPENSE LOADED ===');
-  console.log('Members:', members.map(m => ({ 
-    userId: m.userId, 
-    displayName: m.displayName, 
-    isCurrentUser: m.isCurrentUser 
-  })));
-  console.log('Current user:', currentUser);
-  console.log('Dropdown defaultValue:', dropdownDefaultValue);
-
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       <div className="max-w-2xl mx-auto p-6">
@@ -105,7 +96,18 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
           >
             ◀
           </Link>
-          <h1 className="text-xl font-semibold text-black dark:text-white">Novi trošak</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-black dark:text-white">Novi trošak</h1>
+            {isShared ? (
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full">
+                Zajednički
+              </span>
+            ) : (
+              <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium rounded-full">
+                Lični
+              </span>
+            )}
+          </div>
         </div>
 
         {error && (
