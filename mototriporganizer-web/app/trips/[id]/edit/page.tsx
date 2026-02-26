@@ -919,11 +919,11 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               {/* Balance Panel Modal */}
               {showBalancePanel && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowBalancePanel(false)}>
-                  <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                    <div className="sticky top-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 p-6 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">Σ</span>
-                        <h3 className="text-2xl font-bold text-black dark:text-white">Balans zajedničkih troškova</h3>
+                  <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="sticky top-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">Σ</span>
+                        <h3 className="text-lg font-bold text-black dark:text-white">Balans troškova</h3>
                       </div>
                       <button
                         onClick={() => setShowBalancePanel(false)}
@@ -935,7 +935,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       </button>
                     </div>
 
-                    <div className="p-6 space-y-6">
+                    <div className="p-4 space-y-4">
                       {(() => {
                         const { balances, settlements, total, sharePerPerson } = calculateBalance();
                         
@@ -950,16 +950,16 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                         return (
                           <>
                             {/* Summary */}
-                            <div className="grid grid-cols-2 gap-4 mb-6">
-                              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Ukupno troškova</p>
-                                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Ukupno troškova</p>
+                                <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
                                   {total?.toFixed(2) || '0.00'} EUR
                                 </p>
                               </div>
-                              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-                                <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Po osobi</p>
-                                <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                                <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">Po osobi</p>
+                                <p className="text-xl font-bold text-green-900 dark:text-green-100">
                                   {sharePerPerson?.toFixed(2) || '0.00'} EUR
                                 </p>
                               </div>
@@ -968,33 +968,37 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                             {/* Settlements */}
                             {settlements && settlements.length > 0 && (
                               <div>
-                                <h4 className="text-lg font-semibold text-black dark:text-white mb-3">Ko kome treba da plati</h4>
-                                <div className="space-y-2">
+                                <h4 className="text-base font-semibold text-black dark:text-white mb-3">Ko kome treba da plati</h4>
+                                <div className="space-y-3">
                                   {settlements.filter(s => s.from !== s.to).map((settlement, index) => (
                                     <div 
                                       key={index}
-                                      className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+                                      className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4"
                                     >
-                                      <div className="flex-1">
-                                        <span className="font-semibold text-black dark:text-white">{settlement.from}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                      <div className="flex flex-col items-center gap-2">
+                                        <div className="text-center">
+                                          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Plaća</p>
+                                          <p className="font-bold text-lg text-black dark:text-white">{settlement.from}</p>
+                                        </div>
+                                        
+                                        <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                                         </svg>
-                                      </div>
-                                      <div className="flex-1 text-center">
-                                        <span className="text-xl font-bold text-amber-600 dark:text-amber-400">
-                                          {settlement.amount.toFixed(2)} EUR
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        
+                                        <div className="bg-amber-100 dark:bg-amber-800/30 rounded-lg px-6 py-3 border-2 border-amber-300 dark:border-amber-700">
+                                          <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+                                            {settlement.amount.toFixed(2)} EUR
+                                          </p>
+                                        </div>
+                                        
+                                        <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                                         </svg>
-                                      </div>
-                                      <div className="flex-1 text-right">
-                                        <span className="font-semibold text-black dark:text-white">{settlement.to}</span>
+                                        
+                                        <div className="text-center">
+                                          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Prima</p>
+                                          <p className="font-bold text-lg text-black dark:text-white">{settlement.to}</p>
+                                        </div>
                                       </div>
                                     </div>
                                   ))}
