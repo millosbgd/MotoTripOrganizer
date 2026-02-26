@@ -59,6 +59,7 @@ public class ExpensesController : ControllerBase
                     Amount = e.Amount,
                     Currency = e.Currency,
                     IsShared = e.IsShared,
+                    PaidByUserId = e.PaidByUserId,
                     PaidByDisplayName = e.PaidBy.DisplayName
                 })
                 .ToListAsync();
@@ -113,6 +114,11 @@ public class ExpensesController : ControllerBase
 
             _logger.LogInformation("Created expense {ExpenseId} for trip {TripId}", expense.Id, tripId);
 
+            // Load PaidBy to get DisplayName
+            await _context.Entry(expense)
+                .Reference(e => e.PaidBy)
+                .LoadAsync();
+
             var result = new ExpenseDto
             {
                 Id = expense.Id,
@@ -121,7 +127,9 @@ public class ExpensesController : ControllerBase
                 Description = expense.Description,
                 Amount = expense.Amount,
                 Currency = expense.Currency,
-                IsShared = expense.IsShared
+                IsShared = expense.IsShared,
+                PaidByUserId = expense.PaidByUserId,
+                PaidByDisplayName = expense.PaidBy.DisplayName
             };
 
             return CreatedAtAction(nameof(GetExpense), new { tripId, id = expense.Id }, result);
@@ -164,6 +172,7 @@ public class ExpensesController : ControllerBase
                 Amount = expense.Amount,
                 Currency = expense.Currency,
                 IsShared = expense.IsShared,
+                PaidByUserId = expense.PaidByUserId,
                 PaidByDisplayName = expense.PaidBy.DisplayName
             };
 
@@ -206,6 +215,11 @@ public class ExpensesController : ControllerBase
 
             await _context.SaveChangesAsync();
 
+            // Load PaidBy to get DisplayName
+            await _context.Entry(expense)
+                .Reference(e => e.PaidBy)
+                .LoadAsync();
+
             var result = new ExpenseDto
             {
                 Id = expense.Id,
@@ -214,7 +228,9 @@ public class ExpensesController : ControllerBase
                 Description = expense.Description,
                 Amount = expense.Amount,
                 Currency = expense.Currency,
-                IsShared = expense.IsShared
+                IsShared = expense.IsShared,
+                PaidByUserId = expense.PaidByUserId,
+                PaidByDisplayName = expense.PaidBy.DisplayName
             };
 
             return Ok(result);
@@ -271,6 +287,7 @@ public record ExpenseDto
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "EUR";
     public bool IsShared { get; init; }
+    public int PaidByUserId { get; init; }
     public string PaidByDisplayName { get; init; } = string.Empty;
 }
 
