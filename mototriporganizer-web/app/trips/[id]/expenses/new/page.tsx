@@ -82,6 +82,18 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
     );
   }
 
+  const currentUser = members.find(m => m.isCurrentUser);
+  const dropdownDefaultValue = currentUser?.userId.toString() || (members.length > 0 ? members[0].userId.toString() : '');
+
+  console.log('=== NEW EXPENSE LOADED ===');
+  console.log('Members:', members.map(m => ({ 
+    userId: m.userId, 
+    displayName: m.displayName, 
+    isCurrentUser: m.isCurrentUser 
+  })));
+  console.log('Current user:', currentUser);
+  console.log('Dropdown defaultValue:', dropdownDefaultValue);
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       <div className="max-w-2xl mx-auto p-6">
@@ -202,7 +214,7 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
                 id="paidByUserId"
                 name="paidByUserId"
                 required
-                defaultValue={members.find(m => m.isCurrentUser)?.userId.toString() || (members.length > 0 ? members[0].userId.toString() : '')}
+                defaultValue={dropdownDefaultValue}
                 className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
               >
                 {loadingMembers ? (

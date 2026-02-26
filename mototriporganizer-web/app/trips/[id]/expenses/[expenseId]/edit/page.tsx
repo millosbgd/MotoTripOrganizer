@@ -126,6 +126,16 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
     );
   }
 
+  console.log('=== EDIT EXPENSE LOADED ===');
+  console.log('Expense paidByUserId:', expense.paidByUserId, 'Type:', typeof expense.paidByUserId);
+  console.log('Expense paidByDisplayName:', expense.paidByDisplayName);
+  console.log('Members:', members.map(m => ({ 
+    userId: m.userId, 
+    displayName: m.displayName, 
+    isCurrentUser: m.isCurrentUser 
+  })));
+  console.log('Dropdown defaultValue:', expense.paidByUserId.toString());
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       <div className="max-w-2xl mx-auto p-6">
