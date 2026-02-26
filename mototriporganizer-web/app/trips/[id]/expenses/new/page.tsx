@@ -205,7 +205,7 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
                   <option value="">Nema članova</option>
                 ) : (
                   members.map(member => (
-                    <option key={member.userId} value={member.userId}>
+                    <option key={member.userId} value={member.userId.toString()}>
                       {member.displayName}
                     </option>
                   ))
