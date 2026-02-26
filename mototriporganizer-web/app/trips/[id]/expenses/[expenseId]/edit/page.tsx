@@ -118,6 +118,14 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
     );
   }
 
+  if (loadingMembers) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black p-6">
+        <p className="text-zinc-600 dark:text-zinc-400">Učitavam članove...</p>
+      </div>
+    );
+  }
+
   if (!expense) {
     return (
       <div className="min-h-screen bg-white dark:bg-black p-6">

@@ -81,7 +81,13 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
       </div>
     );
   }
-
+  if (loadingMembers) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black p-6">
+        <p className="text-zinc-600 dark:text-zinc-400">Učitavam članove...</p>
+      </div>
+    );
+  }
   const currentUser = members.find(m => m.isCurrentUser);
   const dropdownDefaultValue = currentUser?.userId.toString() || (members.length > 0 ? members[0].userId.toString() : '');
 
