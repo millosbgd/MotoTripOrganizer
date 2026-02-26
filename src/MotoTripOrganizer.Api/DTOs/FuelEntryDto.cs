@@ -27,6 +27,7 @@ public class CreateFuelEntryDto
     public int Mileage { get; set; }
     public string Location { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public bool IsFull { get; set; }
 }
 
 public class UpdateFuelEntryDto
