@@ -103,7 +103,7 @@ public class ExpensesController : ControllerBase
                 Description = dto.Description,
                 Amount = dto.Amount,
                 Currency = dto.Currency,
-                PaidByUserId = userId.Value,
+                PaidByUserId = dto.PaidByUserId,
                 IsShared = dto.IsShared,
                 CreatedByUserId = userId.Value,
                 CreatedAt = DateTime.UtcNow
@@ -212,6 +212,7 @@ public class ExpensesController : ControllerBase
             expense.Amount = dto.Amount;
             expense.Currency = dto.Currency;
             expense.IsShared = dto.IsShared;
+            expense.PaidByUserId = dto.PaidByUserId;
 
             await _context.SaveChangesAsync();
 
@@ -299,6 +300,7 @@ public record CreateExpenseDto
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "EUR";
     public bool IsShared { get; init; }
+    public int PaidByUserId { get; init; }
 }
 
 public record UpdateExpenseDto
@@ -309,4 +311,5 @@ public record UpdateExpenseDto
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "EUR";
     public bool IsShared { get; init; }
+    public int PaidByUserId { get; init; }
 }

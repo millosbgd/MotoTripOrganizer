@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api, Expense } from '@/lib/api';
+import { api, Expense, TripMember } from '@/lib/api';
 
 interface PageParams {
   id: string;
@@ -13,7 +13,9 @@ interface PageParams {
 export default function EditExpensePage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter();
   const [expense, setExpense] = useState<Expense | null>(null);
+  const [members, setMembers] = useState<TripMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMembers, setLoadingMembers] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +27,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       setTripId(p.id);
       setExpenseId(p.expenseId);
       loadExpense(p.id, p.expenseId);
+      loadMembers(p.id);
     });
   }, []);
 
@@ -37,6 +40,18 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       setError(err instanceof Error ? err.message : 'Failed to load expense');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMembers = async (id: string) => {
+    try {
+      setLoadingMembers(true);
+      const data = await api.getMembers(parseInt(id));
+      setMembers(data);
+    } catch (err) {
+      console.error('Failed to load members:', err);
+    } finally {
+      setLoadingMembers(false);
     }
   };
 
@@ -53,6 +68,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       amount: parseFloat(formData.get('amount') as string),
       currency: formData.get('currency') as string || 'EUR',
       isShared: expense.isShared,
+      paidByUserId: parseInt(formData.get('paidByUserId') as string),
     };
 
     try {
@@ -228,6 +244,32 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
                 <option value="USD">USD ($)</option>
                 <option value="BAM">BAM (KM)</option>
                 <option value="HRK">HRK (kn)</option>
+              </select>
+            </div>
+
+            {/* Paid By */}
+            <div>
+              <label htmlFor="paidByUserId" className="block text-sm font-medium text-black dark:text-white mb-2">
+                Ko je platio *
+              </label>
+              <select
+                id="paidByUserId"
+                name="paidByUserId"
+                required
+                defaultValue={expense.paidByUserId}
+                className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+              >
+                {loadingMembers ? (
+                  <option value="">Učitavam...</option>
+                ) : members.length === 0 ? (
+                  <option value="">Nema članova</option>
+                ) : (
+                  members.map(member => (
+                    <option key={member.userId} value={member.userId}>
+                      {member.displayName}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 

@@ -40,6 +40,7 @@ export interface CreateExpenseDto {
   amount: number;
   currency?: string;
   isShared: boolean;
+  paidByUserId: number;
 }
 
 export interface TripMember {
