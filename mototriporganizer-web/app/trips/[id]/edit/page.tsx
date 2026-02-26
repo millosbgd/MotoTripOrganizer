@@ -488,6 +488,10 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
     console.log('=== BALANCE CALCULATION DEBUG ===');
     console.log('Total shared:', total, 'Members:', members.length, 'Share/person:', sharePerPerson);
+    console.log('Members:', members.map(m => `${m.displayName} (userId=${m.userId})`));
+    console.log('Shared expenses:', sharedExpenses.map(e => 
+      `${e.description}: ${e.amount} by userId=${e.paidByUserId} (${e.paidByDisplayName})`
+    ));
 
     // Struktura: userId -> { displayName, paid, owes, net }
     const participants: Record<number, { 
@@ -511,10 +515,12 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
     // Saberi plaćanja
     sharedExpenses.forEach(expense => {
+      console.log(`Processing expense: ${expense.description}, paidByUserId=${expense.paidByUserId}, exists in participants=${!!participants[expense.paidByUserId]}`);
       if (participants[expense.paidByUserId]) {
         participants[expense.paidByUserId].paid += expense.amount;
       } else {
         // Ex-member koji je platio - ne duguje ništa
+        console.log(`Creating new participant for userId=${expense.paidByUserId} (${expense.paidByDisplayName})`);
         participants[expense.paidByUserId] = {
           userId: expense.paidByUserId,
           displayName: expense.paidByDisplayName,
