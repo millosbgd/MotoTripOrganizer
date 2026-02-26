@@ -71,6 +71,12 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       paidByUserId: parseInt(formData.get('paidByUserId') as string),
     };
 
+    console.log('=== EDIT EXPENSE DEBUG ===');
+    console.log('Original expense.paidByUserId:', expense.paidByUserId);
+    console.log('FormData paidByUserId:', formData.get('paidByUserId'));
+    console.log('Parsed paidByUserId:', parseInt(formData.get('paidByUserId') as string));
+    console.log('Sending to API:', updatedExpense);
+
     try {
       setSaving(true);
       setError(null);
