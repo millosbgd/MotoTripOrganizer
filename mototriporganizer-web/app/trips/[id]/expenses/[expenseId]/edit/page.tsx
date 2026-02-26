@@ -71,12 +71,6 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
       paidByUserId: parseInt(formData.get('paidByUserId') as string),
     };
 
-    console.log('=== EDIT EXPENSE DEBUG ===');
-    console.log('Original expense.paidByUserId:', expense.paidByUserId);
-    console.log('FormData paidByUserId:', formData.get('paidByUserId'));
-    console.log('Parsed paidByUserId:', parseInt(formData.get('paidByUserId') as string));
-    console.log('Sending to API:', updatedExpense);
-
     try {
       setSaving(true);
       setError(null);
@@ -134,15 +128,6 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
     );
   }
 
-  console.log('=== EDIT EXPENSE LOADED ===');
-  console.log('Expense paidByUserId:', expense.paidByUserId, 'Type:', typeof expense.paidByUserId);
-  console.log('Expense paidByDisplayName:', expense.paidByDisplayName);
-  console.log('Members:', members.map(m => ({ 
-    userId: m.userId, 
-    displayName: m.displayName, 
-    isCurrentUser: m.isCurrentUser 
-  })));
-  console.log('Dropdown defaultValue:', expense.paidByUserId.toString());
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">

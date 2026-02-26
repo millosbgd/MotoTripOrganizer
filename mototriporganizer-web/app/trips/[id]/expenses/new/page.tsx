@@ -54,12 +54,6 @@ export default function NewExpensePage({ params }: { params: Promise<PageParams>
       paidByUserId: parseInt(formData.get('paidByUserId') as string),
     };
 
-    console.log('=== NEW EXPENSE DEBUG ===');
-    console.log('Members:', members.map(m => `${m.displayName} (${m.userId}) isCurrentUser=${m.isCurrentUser}`));
-    console.log('FormData paidByUserId:', formData.get('paidByUserId'));
-    console.log('Parsed paidByUserId:', parseInt(formData.get('paidByUserId') as string));
-    console.log('Sending to API:', expense);
-
     try {
       setLoading(true);
       setError(null);
