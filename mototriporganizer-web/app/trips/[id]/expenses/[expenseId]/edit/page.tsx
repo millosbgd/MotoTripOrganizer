@@ -256,7 +256,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
                 id="paidByUserId"
                 name="paidByUserId"
                 required
-                defaultValue={expense.paidByUserId}
+                defaultValue={expense.paidByUserId.toString()}
                 className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
               >
                 {loadingMembers ? (

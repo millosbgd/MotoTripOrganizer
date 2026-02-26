@@ -48,6 +48,7 @@ export interface TripMember {
   displayName: string;
   role: 'Owner' | 'Editor' | 'Viewer';
   joinedAt: string;
+  isCurrentUser: boolean;
 }
 
 export interface AddMemberDto {

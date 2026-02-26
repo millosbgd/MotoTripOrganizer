@@ -58,7 +58,8 @@ public class MembersController : ControllerBase
                     UserId = tm.UserId,
                     DisplayName = tm.User.Email,
                     Role = tm.Role,
-                    JoinedAt = tm.JoinedAt
+                    JoinedAt = tm.JoinedAt,
+                    IsCurrentUser = tm.UserId == userId.Value
                 })
                 .ToListAsync();
 

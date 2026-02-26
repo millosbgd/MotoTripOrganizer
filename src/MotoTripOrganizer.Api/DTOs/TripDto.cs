@@ -31,4 +31,5 @@ public class TripMemberDto
     public string DisplayName { get; set; } = string.Empty;
     public TripMemberRole Role { get; set; }
     public DateTime JoinedAt { get; set; }
+    public bool IsCurrentUser { get; set; }
 }
