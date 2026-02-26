@@ -1032,14 +1032,14 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               {/* Floating Action Buttons */}
               <button
                 onClick={() => setShowBalancePanel(true)}
-                className="fixed bottom-8 right-24 w-14 h-14 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                className="fixed bottom-20 right-24 w-14 h-14 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 flex items-center justify-center z-50"
                 title="Prikaži balans"
               >
                 <span className="text-2xl font-bold">Σ</span>
               </button>
               <button
                 onClick={() => router.push(`/trips/${tripId}/expenses/new?shared=true`)}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                className="fixed bottom-20 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
                 title="Dodaj trošak"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1176,7 +1176,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               {/* Floating Action Button */}
               <button
                 onClick={() => router.push(`/trips/${tripId}/expenses/new?shared=false`)}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                className="fixed bottom-20 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
                 title="Dodaj trošak"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1454,7 +1454,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   });
                   setShowFuelForm(true);
                 }}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                className="fixed bottom-20 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
                 title="Dodaj sipanje"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1745,7 +1745,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   });
                   setShowAccommodationForm(true);
                 }}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                className="fixed bottom-20 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
                 title="Dodaj smeštaj"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2056,7 +2056,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               {!showServiceForm && (
                 <button
                   onClick={() => setShowServiceForm(true)}
-                  className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                  className="fixed bottom-20 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
                   title="Dodaj servis"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2221,7 +2221,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               {!showNoteForm && (
                 <button
                   onClick={() => setShowNoteForm(true)}
-                  className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                  className="fixed bottom-20 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
                   title="Dodaj belešku"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2457,3 +2457,5 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     </div>
   );
 }
+
+
