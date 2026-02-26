@@ -545,103 +545,55 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
     console.log('Balances:', balanceList.map(b => `${b.displayName}: paid=${b.paid}, owes=${b.owes}, net=${b.net}`));
 
-    // DFS algoritam za optimalni settlement
-    const isZero = (x: number) => Math.abs(x) <= tolerance;
-    const snapToZero = (x: number) => isZero(x) ? 0 : x;
+    // Greedy algoritam - matchuj najveće dužnike sa najvećim kreditorima
+    // Garantuje direktne transakcije BEZ lanaca (A → B → C postaje A → C direktno)
+    
+    // Creditors (+ net): ljudi koji treba da dobiju
+    const creditors = balanceList
+      .filter(p => p.net > 0.01)
+      .map(p => ({ ...p }))
+      .sort((a, b) => b.net - a.net); // Najveći credit prvi
 
-    // Izdvoj samo nenulte balanse za optimizaciju
-    const netBalances = balanceList
-      .map(b => ({ ...b }))
-      .filter(b => !isZero(b.net));
+    // Debtors (- net): ljudi koji treba da plate
+    const debtors = balanceList
+      .filter(p => p.net < -0.01)
+      .map(p => ({ ...p }))
+      .sort((a, b) => a.net - b.net); // Najveći dug prvi (najmanji net broj)
 
-    console.log('Non-zero balances:', netBalances.length);
+    console.log('Creditors:', creditors.map(c => `${c.displayName}: +${c.net}`));
+    console.log('Debtors:', debtors.map(d => `${d.displayName}: ${d.net}`));
 
-    if (netBalances.length === 0) {
-      return {
-        balances: balanceList.map(b => ({
-          userId: b.userId,
-          displayName: b.displayName,
-          paid: Math.round(b.paid * 100) / 100,
-          owed: Math.round(b.owes * 100) / 100,
-          balance: b.net
-        })),
-        settlements: [],
-        total: Math.round(total * 100) / 100,
-        sharePerPerson: Math.round(sharePerPerson * 100) / 100
-      };
+    const settlements: { from: string; to: string; amount: number }[] = [];
+
+    let i = 0; // debtor index
+    let j = 0; // creditor index
+
+    while (i < debtors.length && j < creditors.length) {
+      const debtor = debtors[i];
+      const creditor = creditors[j];
+
+      // Koliko treba platiti: minimum od duga i kredita
+      const amount = Math.min(Math.abs(debtor.net), creditor.net);
+      const roundedAmount = Math.round(amount * 100) / 100;
+
+      if (roundedAmount > 0.01) {
+        settlements.push({
+          from: debtor.displayName,
+          to: creditor.displayName,
+          amount: roundedAmount
+        });
+      }
+
+      // Umanji balanse
+      debtor.net += roundedAmount; // dužnik plaća, net ide ka 0
+      creditor.net -= roundedAmount; // kreditor prima, net ide ka 0
+
+      // Pomeri pokazivač kad je neko finished
+      if (Math.abs(debtor.net) < 0.01) i++;
+      if (Math.abs(creditor.net) < 0.01) j++;
     }
 
-    // DFS sa backtracking - pronađi najbolji settlement
-    let bestSettlements: { from: string; to: string; amount: number }[] = [];
-    let minTransactions = Number.MAX_SAFE_INTEGER;
-
-    const dfs = (
-      debts: Array<{ userId: number; displayName: string; net: number }>,
-      start: number,
-      currentSettlements: { from: string; to: string; amount: number }[]
-    ): void => {
-      // Preskoči sve nule
-      while (start < debts.length && isZero(debts[start].net)) start++;
-      
-      if (start === debts.length) {
-        // Našli smo rešenje
-        if (currentSettlements.length < minTransactions) {
-          minTransactions = currentSettlements.length;
-          bestSettlements = [...currentSettlements];
-        }
-        return;
-      }
-
-      // Pruning: ako već imamo previše transakcija, odustani
-      if (currentSettlements.length >= minTransactions) return;
-
-      const used = new Set<number>();
-
-      for (let i = start + 1; i < debts.length; i++) {
-        if (isZero(debts[i].net)) continue;
-        
-        // Tražimo suprotne znake (jedan plaća drugom)
-        if (debts[start].net * debts[i].net >= 0) continue;
-        
-        // Preskoči duplikate
-        if (used.has(debts[i].net)) continue;
-        used.add(debts[i].net);
-
-        const prevI = debts[i].net;
-        const amount = Math.abs(debts[start].net);
-        
-        // Ko plaća kome?
-        let from: string, to: string;
-        if (debts[start].net < 0) {
-          // start duguje
-          from = debts[start].displayName;
-          to = debts[i].displayName;
-        } else {
-          // i duguje
-          from = debts[i].displayName;
-          to = debts[start].displayName;
-        }
-
-        // Izvrši transakciju
-        debts[i].net = snapToZero(debts[i].net + debts[start].net);
-        currentSettlements.push({ from, to, amount: Math.round(amount * 100) / 100 });
-
-        // Rekurzija
-        dfs(debts, start + 1, currentSettlements);
-
-        // Backtrack
-        currentSettlements.pop();
-        debts[i].net = prevI;
-
-        // Ako smo savršeno poništili, to je najbolji potez
-        if (isZero(prevI + debts[start].net)) break;
-      }
-    };
-
-    dfs(netBalances, 0, []);
-
-    console.log('Optimal settlements found:', bestSettlements.length);
-    console.log('Settlements:', bestSettlements);
+    console.log('Settlements (greedy):', settlements);
 
     return {
       balances: balanceList.map(b => ({
@@ -651,7 +603,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         owed: Math.round(b.owes * 100) / 100,
         balance: b.net
       })),
-      settlements: bestSettlements,
+      settlements,
       total: Math.round(total * 100) / 100,
       sharePerPerson: Math.round(sharePerPerson * 100) / 100
     };
