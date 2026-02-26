@@ -75,6 +75,9 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   // Balance calculation state
   const [showBalancePanel, setShowBalancePanel] = useState(false);
 
+  // Fuel statistics state
+  const [showFuelStats, setShowFuelStats] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members'>('general');
   const [isEditMode, setIsEditMode] = useState(true); // true = from edit icon (show only Info & Members), false = from region click (show all except Info & Members)
 
@@ -606,6 +609,39 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       settlements,
       total: Math.round(total * 100) / 100,
       sharePerPerson: Math.round(sharePerPerson * 100) / 100
+    };
+  };
+
+  const calculateFuelStats = () => {
+    // Pronađi trenutnog korisnika
+    const currentUser = members.find(m => m.isCurrentUser);
+    if (!currentUser || fuelEntries.length === 0) {
+      return null;
+    }
+
+    // Filtriraj fuel entries samo za trenutnog korisnika
+    const userFuelEntries = fuelEntries
+      .filter(f => f.createdByUserId === currentUser.userId)
+      .sort((a, b) => a.mileage - b.mileage);
+
+    if (userFuelEntries.length < 2) {
+      return { error: 'Potrebna su najmanje 2 sipanja goriva za statistiku' };
+    }
+
+    // Računa ukupnu kilometražu (max - min)
+    const totalKm = userFuelEntries[userFuelEntries.length - 1].mileage - userFuelEntries[0].mileage;
+    
+    // Računa ukupnu količinu goriva
+    const totalFuel = userFuelEntries.reduce((sum, entry) => sum + entry.quantity, 0);
+    
+    // Računa prosečnu potrošnju na 100km
+    const avgConsumption = totalKm > 0 ? (totalFuel / totalKm) * 100 : 0;
+
+    return {
+      totalKm: Math.round(totalKm),
+      totalFuel: Math.round(totalFuel * 100) / 100,
+      avgConsumption: Math.round(avgConsumption * 100) / 100,
+      entryCount: userFuelEntries.length
     };
   };
 
@@ -1451,7 +1487,126 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                 </div>
               ))}
 
-              {/* Floating Action Button */}
+              {/* Fuel Statistics Modal */}
+              {showFuelStats && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowFuelStats(false)}>
+                  <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700 p-4 flex items-center justify-between rounded-t-lg">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-6 h-6 text-amber-600 dark:text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <h3 className="text-lg font-bold text-black dark:text-white">Statistika goriva</h3>
+                      </div>
+                      <button
+                        onClick={() => setShowFuelStats(false)}
+                        className="text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="p-6">
+                      {(() => {
+                        const stats = calculateFuelStats();
+                        
+                        if (!stats) {
+                          return (
+                            <p className="text-center text-zinc-600 dark:text-zinc-400 py-8">
+                              Nema evidencije sipanja goriva za prikaz statistike.
+                            </p>
+                          );
+                        }
+
+                        if (stats.error) {
+                          return (
+                            <div className="text-center py-8">
+                              <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full mb-3">
+                                <svg className="w-8 h-8 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                              </div>
+                              <p className="text-zinc-600 dark:text-zinc-400">{stats.error}</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-6">
+                            {/* Statistics Cards */}
+                            <div className="space-y-3">
+                              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                                <div className="flex items-center gap-3">
+                                  <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                  </svg>
+                                  <div className="flex-1">
+                                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Ukupna kilometraža</p>
+                                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                      {stats.totalKm.toLocaleString()} km
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                                <div className="flex items-center gap-3">
+                                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                  </svg>
+                                  <div className="flex-1">
+                                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">Ukupna količina goriva</p>
+                                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                      {stats.totalFuel.toFixed(2)} L
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+                                <div className="flex items-center gap-3">
+                                  <svg className="w-8 h-8 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                  </svg>
+                                  <div className="flex-1">
+                                    <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">Prosečna potrošnja</p>
+                                    <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                                      {stats.avgConsumption.toFixed(2)} L/100km
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Additional Info */}
+                            <div className="text-center pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                Statistika zasnovana na {stats.entryCount} {stats.entryCount === 1 ? 'sipanju' : stats.entryCount < 5 ? 'sipanja' : 'sipanja'}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Floating Action Buttons */}
+              {/* Fuel Statistics Button */}
+              <button
+                onClick={() => setShowFuelStats(true)}
+                className="fixed bottom-20 right-24 w-14 h-14 bg-amber-600 text-white rounded-full shadow-lg hover:bg-amber-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                title="Prikaži statistiku goriva"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </button>
+              
+              {/* Add Fuel Entry Button */}
               <button
                 onClick={() => {
                   setEditingFuelId(null);
