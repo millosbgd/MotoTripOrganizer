@@ -12,6 +12,7 @@ public class FuelEntryDto
     public int Mileage { get; set; }
     public string Location { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public bool IsFull { get; set; }
     public int CreatedByUserId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -37,4 +38,5 @@ public class UpdateFuelEntryDto
     public int Mileage { get; set; }
     public string Location { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public bool IsFull { get; set; }
 }

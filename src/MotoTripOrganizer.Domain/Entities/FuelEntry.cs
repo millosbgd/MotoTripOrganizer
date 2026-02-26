@@ -41,6 +41,11 @@ public class FuelEntry
     
     public string? Note { get; set; }
     
+    /// <summary>
+    /// Indicates if the tank was filled to full capacity
+    /// </summary>
+    public bool IsFull { get; set; } = false;
+    
     public int CreatedByUserId { get; set; }
     public int? UpdatedByUserId { get; set; }
     

@@ -65,6 +65,7 @@ public class FuelEntriesController : ControllerBase
                     Mileage = f.Mileage,
                     Location = f.Location,
                     Note = f.Note,
+                    IsFull = f.IsFull,
                     CreatedByUserId = f.CreatedByUserId,
                     CreatedAt = f.CreatedAt,
                     UpdatedAt = f.UpdatedAt
@@ -112,6 +113,7 @@ public class FuelEntriesController : ControllerBase
                 Mileage = fuelEntry.Mileage,
                 Location = fuelEntry.Location,
                 Note = fuelEntry.Note,
+                IsFull = fuelEntry.IsFull,
                 CreatedByUserId = fuelEntry.CreatedByUserId,
                 CreatedAt = fuelEntry.CreatedAt,
                 UpdatedAt = fuelEntry.UpdatedAt
@@ -162,6 +164,7 @@ public class FuelEntriesController : ControllerBase
                 Mileage = dto.Mileage,
                 Location = dto.Location,
                 Note = dto.Note,
+                IsFull = dto.IsFull,
                 CreatedByUserId = userId.Value,
                 CreatedAt = DateTime.UtcNow
             };
@@ -181,6 +184,7 @@ public class FuelEntriesController : ControllerBase
                 Mileage = fuelEntry.Mileage,
                 Location = fuelEntry.Location,
                 Note = fuelEntry.Note,
+                IsFull = fuelEntry.IsFull,
                 CreatedByUserId = fuelEntry.CreatedByUserId,
                 CreatedAt = fuelEntry.CreatedAt,
                 UpdatedAt = fuelEntry.UpdatedAt
@@ -227,6 +231,7 @@ public class FuelEntriesController : ControllerBase
             fuelEntry.Mileage = dto.Mileage;
             fuelEntry.Location = dto.Location;
             fuelEntry.Note = dto.Note;
+            fuelEntry.IsFull = dto.IsFull;
             fuelEntry.UpdatedByUserId = userId.Value;
             fuelEntry.UpdatedAt = DateTime.UtcNow;
 
@@ -244,6 +249,7 @@ public class FuelEntriesController : ControllerBase
                 Mileage = fuelEntry.Mileage,
                 Location = fuelEntry.Location,
                 Note = fuelEntry.Note,
+                IsFull = fuelEntry.IsFull,
                 CreatedByUserId = fuelEntry.CreatedByUserId,
                 CreatedAt = fuelEntry.CreatedAt,
                 UpdatedAt = fuelEntry.UpdatedAt
