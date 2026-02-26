@@ -476,18 +476,20 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const calculateBalance = () => {
-    // Input: lista pripadnika i lista troškova
     const sharedExpenses = expenses.filter(e => e.isShared);
     
     if (sharedExpenses.length === 0 || members.length === 0) {
       return { balances: [], settlements: [], total: 0, sharePerPerson: 0 };
     }
 
-    const participantCount = members.length;
+    const tolerance = 0.01;
     const total = sharedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const sharePerPerson = total / participantCount;
+    const sharePerPerson = total / members.length;
 
-    // Inicijalizuj strukturu za svakog učesnika
+    console.log('=== BALANCE CALCULATION DEBUG ===');
+    console.log('Total shared:', total, 'Members:', members.length, 'Share/person:', sharePerPerson);
+
+    // Struktura: userId -> { displayName, paid, owes, net }
     const participants: Record<number, { 
       userId: number; 
       displayName: string; 
@@ -496,29 +498,23 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       net: number;
     }> = {};
 
-    // Dodaj sve članove tripa
+    // Dodaj sve trenutne članove
     members.forEach(member => {
       participants[member.userId] = {
         userId: member.userId,
         displayName: member.displayName,
         paid: 0,
-        owes: 0,
+        owes: sharePerPerson, // Svaki član duguje svoj deo
         net: 0
       };
     });
 
-    // Izračunaj koliko svako DUGUJE (samo trenutni članovi dele troškove)
-    members.forEach(member => {
-      participants[member.userId].owes = sharePerPerson;
-    });
-
-    // Izračunaj koliko je svako PLATIO
+    // Saberi plaćanja
     sharedExpenses.forEach(expense => {
       if (participants[expense.paidByUserId]) {
         participants[expense.paidByUserId].paid += expense.amount;
       } else {
-        // Neko je platio ali nije u trenutnim članovima - dodaj ga
-        // On ne duguje ništa (owes=0) jer više nije na putu
+        // Ex-member koji je platio - ne duguje ništa
         participants[expense.paidByUserId] = {
           userId: expense.paidByUserId,
           displayName: expense.paidByDisplayName,
@@ -529,71 +525,129 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       }
     });
 
-    // Izračunaj NET = Paid - Owes za svakog (zaokruži na 2 decimale)
-    Object.values(participants).forEach(person => {
-      person.net = Math.round((person.paid - person.owes) * 100) / 100;
+    // NET = Paid - Owes (+ treba da dobije, - treba da plati)
+    const balanceList = Object.values(participants).map(p => {
+      const net = p.paid - p.owes;
+      return {
+        userId: p.userId,
+        displayName: p.displayName,
+        paid: p.paid,
+        owes: p.owes,
+        net: Math.abs(net) <= tolerance ? 0 : Math.round(net * 100) / 100
+      };
     });
 
-    const balances = Object.values(participants);
+    console.log('Balances:', balanceList.map(b => `${b.displayName}: paid=${b.paid}, owes=${b.owes}, net=${b.net}`));
 
-    // Provera: zbir svih Net treba da bude ~0
-    const netSum = balances.reduce((sum, p) => sum + p.net, 0);
-    if (Math.abs(netSum) > 0.01) {
-      console.warn(`Balance validation: Net sum = ${netSum.toFixed(4)} (should be ~0)`);
+    // DFS algoritam za optimalni settlement
+    const isZero = (x: number) => Math.abs(x) <= tolerance;
+    const snapToZero = (x: number) => isZero(x) ? 0 : x;
+
+    // Izdvoj samo nenulte balanse za optimizaciju
+    const netBalances = balanceList
+      .map(b => ({ ...b }))
+      .filter(b => !isZero(b.net));
+
+    console.log('Non-zero balances:', netBalances.length);
+
+    if (netBalances.length === 0) {
+      return {
+        balances: balanceList.map(b => ({
+          userId: b.userId,
+          displayName: b.displayName,
+          paid: Math.round(b.paid * 100) / 100,
+          owed: Math.round(b.owes * 100) / 100,
+          balance: b.net
+        })),
+        settlements: [],
+        total: Math.round(total * 100) / 100,
+        sharePerPerson: Math.round(sharePerPerson * 100) / 100
+      };
     }
 
-    // Greedy matching za settlements
-    // Debtors: Net < 0 (duguju)
-    const debtors = balances
-      .filter(p => p.net < -0.01)
-      .map(p => ({ ...p })) // Clone
-      .sort((a, b) => a.net - b.net); // Najmanji (najveći dug) prvi
+    // DFS sa backtracking - pronađi najbolji settlement
+    let bestSettlements: { from: string; to: string; amount: number }[] = [];
+    let minTransactions = Number.MAX_SAFE_INTEGER;
 
-    // Creditors: Net > 0 (treba da dobiju)
-    const creditors = balances
-      .filter(p => p.net > 0.01)
-      .map(p => ({ ...p })) // Clone
-      .sort((a, b) => b.net - a.net); // Najveći (najveće potraživanje) prvi
-
-    const settlements: { from: string; to: string; amount: number }[] = [];
-
-    let i = 0, j = 0;
-    while (i < debtors.length && j < creditors.length) {
-      const debtor = debtors[i];
-      const creditor = creditors[j];
+    const dfs = (
+      debts: Array<{ userId: number; displayName: string; net: number }>,
+      start: number,
+      currentSettlements: { from: string; to: string; amount: number }[]
+    ): void => {
+      // Preskoči sve nule
+      while (start < debts.length && isZero(debts[start].net)) start++;
       
-      // Isplati min(dug, potraživanje)
-      const amount = Math.min(-debtor.net, creditor.net);
-      const roundedAmount = Math.round(amount * 100) / 100;
-      
-      if (roundedAmount > 0.01) {
-        settlements.push({
-          from: debtor.displayName,
-          to: creditor.displayName,
-          amount: roundedAmount
-        });
+      if (start === debts.length) {
+        // Našli smo rešenje
+        if (currentSettlements.length < minTransactions) {
+          minTransactions = currentSettlements.length;
+          bestSettlements = [...currentSettlements];
+        }
+        return;
       }
 
-      // UmanjiBalanse
-      debtor.net += roundedAmount;
-      creditor.net -= roundedAmount;
+      // Pruning: ako već imamo previše transakcija, odustani
+      if (currentSettlements.length >= minTransactions) return;
 
-      // Pomeri pokazivače kad je neko na 0
-      if (Math.abs(debtor.net) < 0.01) i++;
-      if (Math.abs(creditor.net) < 0.01) j++;
-    }
+      const used = new Set<number>();
 
-    return { 
-      balances: balances.map(b => ({
+      for (let i = start + 1; i < debts.length; i++) {
+        if (isZero(debts[i].net)) continue;
+        
+        // Tražimo suprotne znake (jedan plaća drugom)
+        if (debts[start].net * debts[i].net >= 0) continue;
+        
+        // Preskoči duplikate
+        if (used.has(debts[i].net)) continue;
+        used.add(debts[i].net);
+
+        const prevI = debts[i].net;
+        const amount = Math.abs(debts[start].net);
+        
+        // Ko plaća kome?
+        let from: string, to: string;
+        if (debts[start].net < 0) {
+          // start duguje
+          from = debts[start].displayName;
+          to = debts[i].displayName;
+        } else {
+          // i duguje
+          from = debts[i].displayName;
+          to = debts[start].displayName;
+        }
+
+        // Izvrši transakciju
+        debts[i].net = snapToZero(debts[i].net + debts[start].net);
+        currentSettlements.push({ from, to, amount: Math.round(amount * 100) / 100 });
+
+        // Rekurzija
+        dfs(debts, start + 1, currentSettlements);
+
+        // Backtrack
+        currentSettlements.pop();
+        debts[i].net = prevI;
+
+        // Ako smo savršeno poništili, to je najbolji potez
+        if (isZero(prevI + debts[start].net)) break;
+      }
+    };
+
+    dfs(netBalances, 0, []);
+
+    console.log('Optimal settlements found:', bestSettlements.length);
+    console.log('Settlements:', bestSettlements);
+
+    return {
+      balances: balanceList.map(b => ({
         userId: b.userId,
         displayName: b.displayName,
         paid: Math.round(b.paid * 100) / 100,
         owed: Math.round(b.owes * 100) / 100,
         balance: b.net
-      })), 
-      settlements, 
-      total: Math.round(total * 100) / 100, 
-      sharePerPerson: Math.round(sharePerPerson * 100) / 100 
+      })),
+      settlements: bestSettlements,
+      total: Math.round(total * 100) / 100,
+      sharePerPerson: Math.round(sharePerPerson * 100) / 100
     };
   };
 
