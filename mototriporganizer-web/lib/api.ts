@@ -66,6 +66,7 @@ export interface FuelEntry {
   mileage: number;
   location: string;
   note?: string;
+  isFull?: boolean;
   createdByUserId: number;
   createdAt: string;
   updatedAt?: string;
@@ -79,6 +80,7 @@ export interface CreateFuelEntryDto {
   mileage: number;
   location: string;
   note?: string;
+  isFull?: boolean;
 }
 
 export interface UpdateFuelEntryDto {
@@ -89,6 +91,7 @@ export interface UpdateFuelEntryDto {
   mileage: number;
   location: string;
   note?: string;
+  isFull?: boolean;
 }
 
 export interface AccommodationEntry {

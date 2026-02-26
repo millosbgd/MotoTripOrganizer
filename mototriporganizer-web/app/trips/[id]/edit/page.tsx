@@ -32,7 +32,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     currency: 'EUR',
     mileage: '',
     location: '',
-    note: ''
+    note: '',
+    isFull: false
   });
   const [showAccommodationForm, setShowAccommodationForm] = useState(false);
   const [editingAccommodationId, setEditingAccommodationId] = useState<number | null>(null);
@@ -242,7 +243,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         currency: fuelFormData.currency,
         mileage: parseInt(fuelFormData.mileage),
         location: fuelFormData.location,
-        note: fuelFormData.note || undefined
+        note: fuelFormData.note || undefined,
+        isFull: fuelFormData.isFull
       };
 
       if (editingFuelId) {
@@ -260,7 +262,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         currency: 'EUR',
         mileage: '',
         location: '',
-        note: ''
+        note: '',
+        isFull: false
       });
       await loadFuelEntries(tripId);
     } catch (err) {
@@ -277,7 +280,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       currency: fuel.currency,
       mileage: fuel.mileage.toString(),
       location: fuel.location,
-      note: fuel.note || ''
+      note: fuel.note || '',
+      isFull: fuel.isFull || false
     });
     setShowFuelForm(true);
   };
@@ -624,24 +628,31 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       .filter(f => f.createdByUserId === currentUser.userId)
       .sort((a, b) => a.mileage - b.mileage);
 
-    if (userFuelEntries.length < 2) {
-      return { error: 'Potrebna su najmanje 2 sipanja goriva za statistiku' };
+    // Filtriraj samo puna sipanja
+    const fullTankEntries = userFuelEntries.filter(f => f.isFull === true);
+
+    if (fullTankEntries.length < 2) {
+      return { error: 'Potrebna su najmanje 2 puna sipanja za tačan proračun potrošnje' };
     }
 
-    // Računa ukupnu kilometražu (max - min)
-    const totalKm = userFuelEntries[userFuelEntries.length - 1].mileage - userFuelEntries[0].mileage;
-    
-    // Računa ukupnu količinu goriva
-    const totalFuel = userFuelEntries.reduce((sum, entry) => sum + entry.quantity, 0);
-    
-    // Računa prosečnu potrošnju na 100km
+    // Uzmi prvo i poslednje puno sipanje
+    const firstFull = fullTankEntries[0];
+    const lastFull = fullTankEntries[fullTankEntries.length - 1];
+
+    // Kilometraža između prvog i poslednjeg punog sipanja
+    const totalKm = lastFull.mileage - firstFull.mileage;
+
+    // Ukupna količina: sve puna sipanja OSIM prvog (od drugog do poslednjeg uključujući)
+    const totalFuel = fullTankEntries.slice(1).reduce((sum, entry) => sum + entry.quantity, 0);
+
+    // Prosečna potrošnja na 100km
     const avgConsumption = totalKm > 0 ? (totalFuel / totalKm) * 100 : 0;
 
     return {
       totalKm: Math.round(totalKm),
       totalFuel: Math.round(totalFuel * 100) / 100,
       avgConsumption: Math.round(avgConsumption * 100) / 100,
-      entryCount: userFuelEntries.length
+      entryCount: fullTankEntries.length
     };
   };
 
@@ -1355,6 +1366,19 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                           className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
                         />
                       </div>
+                      <div className="md:col-span-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={fuelFormData.isFull}
+                            onChange={(e) => setFuelFormData({...fuelFormData, isFull: e.target.checked})}
+                            className="w-4 h-4 text-blue-600 bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            Pun rezervoar
+                          </span>
+                        </label>
+                      </div>
                     </div>
                     <div className="flex gap-3">
                       <button
@@ -1423,9 +1447,19 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                               <div className="flex-grow min-w-0">
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex-grow min-w-0">
-                                    <h4 className="font-semibold text-black dark:text-white text-base">
-                                      {fuel.location}
-                                    </h4>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h4 className="font-semibold text-black dark:text-white text-base">
+                                        {fuel.location}
+                                      </h4>
+                                      {fuel.isFull && (
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
+                                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                          </svg>
+                                          Pun
+                                        </span>
+                                      )}
+                                    </div>
                                     {fuel.note && (
                                       <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                                         {fuel.note}
@@ -1617,7 +1651,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     currency: 'EUR',
                     mileage: '',
                     location: '',
-                    note: ''
+                    note: '',
+                    isFull: false
                   });
                   setShowFuelForm(true);
                 }}
