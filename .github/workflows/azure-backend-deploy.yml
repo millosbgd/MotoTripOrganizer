@@ -54,11 +54,12 @@ jobs:
         cd ..
         
         echo "🚀 Deploying to Azure..."
-        az webapp deployment source config-zip \
+        az webapp deploy \
           --resource-group ${{ env.RESOURCE_GROUP }} \
           --name ${{ env.WEBAPP_NAME }} \
-          --src deploy.zip \
-          --timeout 600
+          --src-path deploy.zip \
+          --type zip \
+          --async false
         
         echo "✅ Deployment completed"
 
