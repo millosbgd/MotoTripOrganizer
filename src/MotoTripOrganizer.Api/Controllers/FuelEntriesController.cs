@@ -50,7 +50,7 @@ public class FuelEntriesController : ControllerBase
             }
 
             var fuelEntries = await _context.FuelEntries
-                .Where(f => f.TripId == tripId)
+                .Where(f => f.TripId == tripId && f.CreatedByUserId == userId.Value)
                 .OrderByDescending(f => f.Date)
                 .ThenByDescending(f => f.Mileage)
                 .Select(f => new FuelEntryDto

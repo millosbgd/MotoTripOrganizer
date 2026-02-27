@@ -642,8 +642,16 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     // Kilometraža između prvog i poslednjeg punog sipanja
     const totalKm = lastFull.mileage - firstFull.mileage;
 
-    // Ukupna količina: sve puna sipanja OSIM prvog (od drugog do poslednjeg uključujući)
-    const totalFuel = fullTankEntries.slice(1).reduce((sum, entry) => sum + entry.quantity, 0);
+    // Ukupna količina: SVA sipanja (puna i nepuna) između prvog i poslednjeg punog, 
+    // OSIM količine prvog punog sipanja
+    const entriesBetween = userFuelEntries.filter(
+      entry => entry.mileage >= firstFull.mileage && entry.mileage <= lastFull.mileage
+    );
+    const totalFuel = entriesBetween.reduce((sum, entry) => {
+      // Preskoči količinu prvog punog sipanja
+      if (entry.id === firstFull.id) return sum;
+      return sum + entry.quantity;
+    }, 0);
 
     // Prosečna potrošnja na 100km
     const avgConsumption = totalKm > 0 ? (totalFuel / totalKm) * 100 : 0;

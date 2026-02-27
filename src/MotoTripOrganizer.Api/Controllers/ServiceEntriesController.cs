@@ -51,7 +51,7 @@ namespace MotoTripOrganizer.Api.Controllers
             }
 
             var serviceEntries = await _context.ServiceEntries
-                .Where(se => se.TripId == tripId)
+                .Where(se => se.TripId == tripId && se.CreatedByUserId == userId.Value)
                 .OrderByDescending(se => se.ServiceDate)
                 .Select(se => new ServiceEntryDto
                 {
