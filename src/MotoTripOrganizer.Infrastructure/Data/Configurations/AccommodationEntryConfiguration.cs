@@ -42,6 +42,8 @@ public class AccommodationEntryConfiguration : IEntityTypeConfiguration<Accommod
         builder.Property(a => a.Note)
             .HasMaxLength(1000);
 
+        builder.Property(a => a.PaymentDueDate);
+
         builder.Property(a => a.CreatedAt)
             .IsRequired();
 

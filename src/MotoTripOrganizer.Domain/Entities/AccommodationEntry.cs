@@ -45,6 +45,11 @@ public class AccommodationEntry
     
     public string? Note { get; set; }
     
+    /// <summary>
+    /// Payment due date (deadline for paying the accommodation)
+    /// </summary>
+    public DateTime? PaymentDueDate { get; set; }
+    
     public int CreatedByUserId { get; set; }
     public int? UpdatedByUserId { get; set; }
     

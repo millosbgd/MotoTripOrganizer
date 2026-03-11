@@ -105,6 +105,7 @@ export interface AccommodationEntry {
   currency: string;
   location: string;
   note?: string;
+  paymentDueDate?: string;
   createdByUserId: number;
   createdAt: string;
   updatedAt?: string;
@@ -119,6 +120,7 @@ export interface CreateAccommodationEntryDto {
   currency: string;
   location: string;
   note?: string;
+  paymentDueDate?: string;
 }
 
 export interface UpdateAccommodationEntryDto {
@@ -130,6 +132,7 @@ export interface UpdateAccommodationEntryDto {
   currency: string;
   location: string;
   note?: string;
+  paymentDueDate?: string;
 }
 
 export interface ServiceEntry {

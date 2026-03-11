@@ -45,7 +45,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     amount: '',
     currency: 'EUR',
     location: '',
-    note: ''
+    note: '',
+    paymentDueDate: ''
   });
 
   // Service state
@@ -312,7 +313,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         amount: parseFloat(accommodationFormData.amount),
         currency: accommodationFormData.currency,
         location: accommodationFormData.location,
-        note: accommodationFormData.note || undefined
+        note: accommodationFormData.note || undefined,
+        paymentDueDate: accommodationFormData.paymentDueDate ? accommodationFormData.paymentDueDate + 'T12:00:00Z' : undefined
       };
 
       if (editingAccommodationId) {
@@ -331,7 +333,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         amount: '',
         currency: 'EUR',
         location: '',
-        note: ''
+        note: '',
+        paymentDueDate: ''
       });
       await loadAccommodationEntries(tripId);
     } catch (err) {
@@ -349,7 +352,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       amount: accommodation.amount.toString(),
       currency: accommodation.currency,
       location: accommodation.location,
-      note: accommodation.note || ''
+      note: accommodation.note || '',
+      paymentDueDate: accommodation.paymentDueDate ? accommodation.paymentDueDate.split('T')[0] : ''
     });
     setShowAccommodationForm(true);
   };
@@ -1797,6 +1801,17 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                           className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                          Plaćanje do
+                        </label>
+                        <input
+                          type="date"
+                          value={accommodationFormData.paymentDueDate}
+                          onChange={(e) => setAccommodationFormData({...accommodationFormData, paymentDueDate: e.target.value})}
+                          className="w-full px-4 py-2 bg-white dark:bg-zinc-900 text-black dark:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                        />
+                      </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                           Napomena
@@ -1902,6 +1917,14 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                                         </svg>
                                         {new Date(accommodation.checkInDate).toLocaleDateString('sr-Latn')} - {new Date(accommodation.checkOutDate).toLocaleDateString('sr-Latn')}
                                       </span>
+                                      {accommodation.paymentDueDate && (
+                                        <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-medium">
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                          </svg>
+                                          Plaćanje do: {new Date(accommodation.paymentDueDate).toLocaleDateString('sr-Latn')}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                   
@@ -1951,7 +1974,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     amount: '',
                     currency: 'EUR',
                     location: '',
-                    note: ''
+                    note: '',
+                    paymentDueDate: ''
                   });
                   setShowAccommodationForm(true);
                 }}

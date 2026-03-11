@@ -46,9 +46,10 @@ public class ExpensesController : ControllerBase
                 return NotFound(new { message = "Trip not found or access denied" });
             }
 
+            // Return only shared expenses OR personal expenses created by current user
             var expenses = await _context.Expenses
                 .Include(e => e.PaidBy)
-                .Where(e => e.TripId == tripId)
+                .Where(e => e.TripId == tripId && (e.IsShared || e.PaidByUserId == userId.Value))
                 .OrderByDescending(e => e.Date)
                 .Select(e => new ExpenseDto
                 {

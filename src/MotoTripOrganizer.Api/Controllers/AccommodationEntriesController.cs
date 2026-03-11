@@ -64,6 +64,7 @@ public class AccommodationEntriesController : ControllerBase
                     Currency = a.Currency,
                     Location = a.Location,
                     Note = a.Note,
+                    PaymentDueDate = a.PaymentDueDate,
                     CreatedByUserId = a.CreatedByUserId,
                     CreatedAt = a.CreatedAt,
                     UpdatedAt = a.UpdatedAt
@@ -112,6 +113,7 @@ public class AccommodationEntriesController : ControllerBase
                 Currency = accommodationEntry.Currency,
                 Location = accommodationEntry.Location,
                 Note = accommodationEntry.Note,
+                PaymentDueDate = accommodationEntry.PaymentDueDate,
                 CreatedByUserId = accommodationEntry.CreatedByUserId,
                 CreatedAt = accommodationEntry.CreatedAt,
                 UpdatedAt = accommodationEntry.UpdatedAt
@@ -159,6 +161,7 @@ public class AccommodationEntriesController : ControllerBase
                 Currency = dto.Currency,
                 Location = dto.Location,
                 Note = dto.Note,
+                PaymentDueDate = dto.PaymentDueDate,
                 CreatedByUserId = userId.Value,
                 CreatedAt = DateTime.UtcNow
             };
@@ -178,6 +181,7 @@ public class AccommodationEntriesController : ControllerBase
                 Currency = accommodationEntry.Currency,
                 Location = accommodationEntry.Location,
                 Note = accommodationEntry.Note,
+                PaymentDueDate = accommodationEntry.PaymentDueDate,
                 CreatedByUserId = accommodationEntry.CreatedByUserId,
                 CreatedAt = accommodationEntry.CreatedAt,
                 UpdatedAt = accommodationEntry.UpdatedAt
@@ -221,6 +225,7 @@ public class AccommodationEntriesController : ControllerBase
             accommodationEntry.Currency = dto.Currency;
             accommodationEntry.Location = dto.Location;
             accommodationEntry.Note = dto.Note;
+            accommodationEntry.PaymentDueDate = dto.PaymentDueDate;
             accommodationEntry.UpdatedByUserId = userId.Value;
             accommodationEntry.UpdatedAt = DateTime.UtcNow;
 
@@ -238,6 +243,7 @@ public class AccommodationEntriesController : ControllerBase
                 Currency = accommodationEntry.Currency,
                 Location = accommodationEntry.Location,
                 Note = accommodationEntry.Note,
+                PaymentDueDate = accommodationEntry.PaymentDueDate,
                 CreatedByUserId = accommodationEntry.CreatedByUserId,
                 CreatedAt = accommodationEntry.CreatedAt,
                 UpdatedAt = accommodationEntry.UpdatedAt

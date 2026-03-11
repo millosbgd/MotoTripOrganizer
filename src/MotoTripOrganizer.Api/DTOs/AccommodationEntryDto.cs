@@ -12,6 +12,7 @@ public class AccommodationEntryDto
     public string Currency { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public DateTime? PaymentDueDate { get; set; }
     public int CreatedByUserId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -27,6 +28,7 @@ public class CreateAccommodationEntryDto
     public string Currency { get; set; } = "EUR";
     public string Location { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public DateTime? PaymentDueDate { get; set; }
 }
 
 public class UpdateAccommodationEntryDto
@@ -39,4 +41,5 @@ public class UpdateAccommodationEntryDto
     public string Currency { get; set; } = "EUR";
     public string Location { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public DateTime? PaymentDueDate { get; set; }
 }
