@@ -48,24 +48,40 @@ finally {
 
 Write-Host ""
 
-# Step 2: Deploy frontend
-Write-Host "🌐 Deploying frontend to Vercel..." -ForegroundColor Yellow
+# Step 2: Deploy frontend via GitHub (Vercel picks up push to main automatically)
+Write-Host "🌐 Deploying frontend via GitHub → Vercel..." -ForegroundColor Yellow
 Push-Location $frontendPath
 try {
-    vercel --prod --yes
-    if ($LASTEXITCODE -ne 0) {
-        throw "Frontend deployment failed!"
+    # Check if there are any changes to commit
+    $gitStatus = git status --porcelain 2>&1
+    if ($gitStatus) {
+        Write-Host "📝 Uncommitted changes detected, committing..." -ForegroundColor Yellow
+        git add -A
+        git commit -m "deploy: frontend update $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Git commit failed!"
+        }
+        Write-Host "✅ Changes committed" -ForegroundColor Green
+    } else {
+        Write-Host "ℹ️  No uncommitted frontend changes" -ForegroundColor Cyan
     }
-    Write-Host "✅ Frontend deployed" -ForegroundColor Green
 }
 catch {
-    Write-Host "❌ Frontend deployment failed: $_" -ForegroundColor Red
+    Write-Host "❌ Git commit failed: $_" -ForegroundColor Red
     Pop-Location
     exit 1
 }
 finally {
     Pop-Location
 }
+
+Write-Host "📤 Pushing to GitHub (Vercel will deploy automatically)..." -ForegroundColor Yellow
+git push origin main
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Git push failed!" -ForegroundColor Red
+    exit 1
+}
+Write-Host "✅ Pushed to GitHub — Vercel deployment triggered" -ForegroundColor Green
 
 Write-Host ""
 Write-Host "🎉 Full deployment completed successfully!" -ForegroundColor Green
