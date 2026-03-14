@@ -9,6 +9,8 @@ namespace MotoTripOrganizer.Domain.Entities
         public int TripId { get; set; }
         
         public string Content { get; set; } = string.Empty;
+
+        public bool IsPublic { get; set; } = false;
         
         // Audit fields
         public int CreatedByUserId { get; set; }

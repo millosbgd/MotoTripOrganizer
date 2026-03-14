@@ -50,7 +50,7 @@ namespace MotoTripOrganizer.Api.Controllers
             }
 
             var noteEntries = await _context.NoteEntries
-                .Where(ne => ne.TripId == tripId)
+                .Where(ne => ne.TripId == tripId && (ne.IsPublic || ne.CreatedByUserId == userId.Value))
                 .Include(ne => ne.CreatedByUser)
                 .Include(ne => ne.UpdatedByUser)
                 .OrderByDescending(ne => ne.CreatedAt)
@@ -59,6 +59,7 @@ namespace MotoTripOrganizer.Api.Controllers
                     Id = ne.Id,
                     TripId = ne.TripId,
                     Content = ne.Content,
+                    IsPublic = ne.IsPublic,
                     CreatedByUserId = ne.CreatedByUserId,
                     CreatedByUserDisplayName = ne.CreatedByUser.DisplayName,
                     UpdatedByUserId = ne.UpdatedByUserId,
@@ -106,6 +107,7 @@ namespace MotoTripOrganizer.Api.Controllers
                 Id = noteEntry.Id,
                 TripId = noteEntry.TripId,
                 Content = noteEntry.Content,
+                IsPublic = noteEntry.IsPublic,
                 CreatedByUserId = noteEntry.CreatedByUserId,
                 CreatedByUserDisplayName = noteEntry.CreatedByUser.DisplayName,
                 UpdatedByUserId = noteEntry.UpdatedByUserId,
@@ -142,6 +144,7 @@ namespace MotoTripOrganizer.Api.Controllers
             {
                 TripId = tripId,
                 Content = dto.Content,
+                IsPublic = dto.IsPublic,
                 CreatedByUserId = userId.Value,
                 CreatedAt = DateTime.UtcNow
             };
@@ -199,6 +202,7 @@ namespace MotoTripOrganizer.Api.Controllers
             }
 
             noteEntry.Content = dto.Content;
+            noteEntry.IsPublic = dto.IsPublic;
             noteEntry.UpdatedByUserId = userId.Value;
             noteEntry.UpdatedAt = DateTime.UtcNow;
 

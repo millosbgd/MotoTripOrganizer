@@ -71,7 +71,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [noteFormData, setNoteFormData] = useState({
-    content: ''
+    content: '',
+    isPublic: false
   });
 
   // Balance calculation state
@@ -504,7 +505,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
     try {
       const noteData = {
-        content: noteFormData.content
+        content: noteFormData.content,
+        isPublic: noteFormData.isPublic
       };
 
       if (editingNoteId) {
@@ -517,7 +519,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       setShowNoteForm(false);
       setEditingNoteId(null);
       setNoteFormData({
-        content: ''
+        content: '',
+        isPublic: false
       });
     } catch (err) {
       alert('Greška pri čuvanju beleške');
@@ -527,10 +530,11 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   const handleEditNote = (note: NoteEntry) => {
     setEditingNoteId(note.id);
     setNoteFormData({
-      content: note.content
+      content: note.content,
+      isPublic: note.isPublic
     });
     setShowNoteForm(true);
-  };
+  };;
 
   const handleDeleteNote = async (noteId: number) => {
     if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovu belešku?')) {
@@ -2369,7 +2373,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                       setShowNoteForm(false);
                       setEditingNoteId(null);
                       setNoteFormData({
-                        content: ''
+                        content: '',
+                        isPublic: false
                       });
                     }}
                     className="mr-3 text-black dark:text-white hover:text-zinc-600 dark:hover:text-zinc-400"
@@ -2391,12 +2396,33 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     <label className="block text-sm font-medium text-black dark:text-white mb-1">Sadržaj *</label>
                     <textarea
                       value={noteFormData.content}
-                      onChange={(e) => setNoteFormData({ content: e.target.value })}
+                      onChange={(e) => setNoteFormData({ ...noteFormData, content: e.target.value })}
                       required
                       rows={6}
                       placeholder="Unesite belešku..."
                       className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
                     />
+                  </div>
+
+                  {/* Public toggle */}
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800">
+                    <div>
+                      <p className="text-sm font-medium text-black dark:text-white">Vidljivost</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {noteFormData.isPublic ? 'Javna — vidljiva svim članovima' : 'Privatna — vidljiva samo tebi'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setNoteFormData({ ...noteFormData, isPublic: !noteFormData.isPublic })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        noteFormData.isPublic ? 'bg-green-500' : 'bg-zinc-300 dark:bg-zinc-600'
+                      }`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        noteFormData.isPublic ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                    </button>
                   </div>
 
                   <div className="flex justify-end gap-2">
@@ -2406,7 +2432,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                         setShowNoteForm(false);
                         setEditingNoteId(null);
                         setNoteFormData({
-                          content: ''
+                          content: '',
+                          isPublic: false
                         });
                       }}
                       className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
@@ -2438,6 +2465,13 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                             onClick={() => handleEditNote(note)}
                             className="border border-indigo-600 border-l-8 bg-gradient-to-r from-indigo-100 to-white dark:from-indigo-900/30 dark:to-zinc-800 rounded-lg p-4 hover:shadow-lg cursor-pointer transition-all hover:scale-[1.02] duration-200 relative"
                           >
+                            <div className="absolute top-3 right-10">
+                              {note.isPublic ? (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium">Javna</span>
+                              ) : (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 font-medium">Privatna</span>
+                              )}
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="flex-shrink-0 mt-1 text-indigo-600">
                                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -2620,49 +2654,52 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               ) : emergencyInfos.length === 0 ? (
                 <p className="text-zinc-500 dark:text-zinc-400">Nema unetih hitnih podataka.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Član</th>
-                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Kontakt (ime)</th>
-                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Kontakt (tel)</th>
-                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Krvna grupa</th>
-                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Polisa</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {emergencyInfos.map((info) => (
-                        <tr
-                          key={info.userId}
-                          className={`border-b border-zinc-100 dark:border-zinc-800 ${info.isCurrentUser ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
-                        >
-                          <td className="py-3 px-3 text-black dark:text-white font-medium">
-                            {info.userDisplayName}
-                            {info.isCurrentUser && (
-                              <span className="ml-2 text-xs text-red-600 dark:text-red-400">(ja)</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">{info.emergencyContactName || '—'}</td>
-                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">
-                            {info.emergencyContactPhone ? (
-                              <a href={`tel:${info.emergencyContactPhone}`} className="text-blue-600 dark:text-blue-400 hover:underline">
-                                {info.emergencyContactPhone}
-                              </a>
-                            ) : '—'}
-                          </td>
-                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">
-                            {info.bloodType ? (
-                              <span className="inline-block px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-semibold text-xs">
-                                {info.bloodType}
-                              </span>
-                            ) : '—'}
-                          </td>
-                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">{info.healthInsurancePolicyNumber || '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="flex flex-col gap-3">
+                  {emergencyInfos.map((info) => (
+                    <div
+                      key={info.userId}
+                      className={`rounded-lg border p-4 ${info.isCurrentUser ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10' : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50'}`}
+                    >
+                      {/* Header: ime člana + krvna grupa */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-black dark:text-white">{info.userDisplayName}</span>
+                          {info.isCurrentUser && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">ja</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400">Krvna grupa:</span>
+                          {info.bloodType ? (
+                            <span className="px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-bold text-sm">
+                              {info.bloodType}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-zinc-400 dark:text-zinc-500">—</span>
+                          )}
+                        </div>
+                      </div>
+                      {/* Podaci */}
+                      <div className="grid grid-cols-1 gap-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Kontakt ime:</span>
+                          <span className="text-black dark:text-white">{info.emergencyContactName || '—'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Kontakt tel:</span>
+                          {info.emergencyContactPhone ? (
+                            <a href={`tel:${info.emergencyContactPhone}`} className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                              {info.emergencyContactPhone}
+                            </a>
+                          ) : <span className="text-black dark:text-white">—</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Polisa:</span>
+                          <span className="text-black dark:text-white">{info.healthInsurancePolicyNumber || '—'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -2850,6 +2887,19 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                   </svg>
                 </button>
                 <button
+                  onClick={() => setActiveTab('emergency')}
+                  title="Emergency podaci"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'emergency'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                  </svg>
+                </button>
+                <button
                   onClick={() => setActiveTab('notes')}
                   title="Beleške"
                   className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
@@ -2864,19 +2914,6 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     <line x1="16" y1="13" x2="8" y2="13"/>
                     <line x1="16" y1="17" x2="8" y2="17"/>
                     <line x1="10" y1="9" x2="8" y2="9"/>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setActiveTab('emergency')}
-                  title="Emergency podaci"
-                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
-                    activeTab === 'emergency'
-                      ? 'border-black dark:border-white text-black dark:text-white'
-                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                   </svg>
                 </button>
               </>

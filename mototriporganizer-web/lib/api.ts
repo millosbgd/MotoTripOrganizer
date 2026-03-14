@@ -177,6 +177,7 @@ export interface NoteEntry {
   id: number;
   tripId: number;
   content: string;
+  isPublic: boolean;
   createdByUserId: number;
   createdByUserDisplayName: string;
   updatedByUserId?: number;
@@ -187,10 +188,12 @@ export interface NoteEntry {
 
 export interface CreateNoteEntryDto {
   content: string;
+  isPublic: boolean;
 }
 
 export interface UpdateNoteEntryDto {
   content: string;
+  isPublic: boolean;
 }
 
 export interface EmergencyInfo {

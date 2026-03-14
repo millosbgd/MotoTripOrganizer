@@ -19,6 +19,10 @@ namespace MotoTripOrganizer.Infrastructure.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(5000);
 
+            builder.Property(ne => ne.IsPublic)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             builder.Property(ne => ne.CreatedAt)
                 .IsRequired();
 
