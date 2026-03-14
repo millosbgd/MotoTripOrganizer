@@ -24,6 +24,11 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Publish output
+publish/
+**/publish/
+deploy.zip
+
 # Visual Studio cache/options directory
 .vs/
 

@@ -193,6 +193,27 @@ export interface UpdateNoteEntryDto {
   content: string;
 }
 
+export interface EmergencyInfo {
+  id: number;
+  tripId: number;
+  userId: number;
+  userDisplayName?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  bloodType?: string;
+  healthInsurancePolicyNumber?: string;
+  createdAt: string;
+  updatedAt?: string;
+  isCurrentUser: boolean;
+}
+
+export interface UpsertEmergencyInfoDto {
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  bloodType?: string;
+  healthInsurancePolicyNumber?: string;
+}
+
 // Helper to get auth token
 async function getAuthToken(): Promise<string | null> {
   try {
@@ -660,5 +681,33 @@ export const api = {
     if (!response.ok) {
       throw new Error(`Failed to delete note entry: ${response.statusText}`);
     }
+  },
+
+  // Emergency Info
+  async getEmergencyInfo(tripId: number): Promise<EmergencyInfo[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/emergency-info`, {
+      headers: await buildHeaders(),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch emergency info: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async upsertMyEmergencyInfo(tripId: number, data: UpsertEmergencyInfoDto): Promise<EmergencyInfo> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/emergency-info/me`, {
+      method: 'PUT',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to save emergency info: ${response.statusText}`);
+    }
+
+    return response.json();
   },
 };

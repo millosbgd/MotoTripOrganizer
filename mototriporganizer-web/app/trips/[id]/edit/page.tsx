@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry, NoteEntry } from '@/lib/api';
+import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry, NoteEntry, EmergencyInfo, UpsertEmergencyInfoDto } from '@/lib/api';
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -80,7 +80,19 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   // Fuel statistics state
   const [showFuelStats, setShowFuelStats] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members'>('general');
+  // Emergency info state
+  const [emergencyInfos, setEmergencyInfos] = useState<EmergencyInfo[]>([]);
+  const [loadingEmergency, setLoadingEmergency] = useState(false);
+  const [savingEmergency, setSavingEmergency] = useState(false);
+  const [emergencyFormData, setEmergencyFormData] = useState<UpsertEmergencyInfoDto>({
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    bloodType: '',
+    healthInsurancePolicyNumber: ''
+  });
+  const [emergencyFormLoaded, setEmergencyFormLoaded] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members' | 'emergency'>('general');
   const [isEditMode, setIsEditMode] = useState(true); // true = from edit icon (show only Info & Members), false = from region click (show all except Info & Members)
 
   useEffect(() => {
@@ -102,6 +114,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         loadAccommodationEntries(p.id);
         loadServiceEntries(p.id);
         loadNoteEntries(p.id);
+        loadEmergencyInfos(p.id);
       }
     });
   }, []);
@@ -187,6 +200,52 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
       console.error('Failed to load note entries:', err);
     } finally {
       setLoadingNotes(false);
+    }
+  };
+
+  const loadEmergencyInfos = async (id: string) => {
+    try {
+      setLoadingEmergency(true);
+      const data = await api.getEmergencyInfo(parseInt(id));
+      setEmergencyInfos(data);
+      // Pre-fill form with current user's data
+      const mine = data.find(e => e.isCurrentUser);
+      if (mine) {
+        setEmergencyFormData({
+          emergencyContactName: mine.emergencyContactName ?? '',
+          emergencyContactPhone: mine.emergencyContactPhone ?? '',
+          bloodType: mine.bloodType ?? '',
+          healthInsurancePolicyNumber: mine.healthInsurancePolicyNumber ?? ''
+        });
+      }
+      setEmergencyFormLoaded(true);
+    } catch (err) {
+      console.error('Failed to load emergency info:', err);
+      setEmergencyFormLoaded(true);
+    } finally {
+      setLoadingEmergency(false);
+    }
+  };
+
+  const handleEmergencySubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!tripId) return;
+    try {
+      setSavingEmergency(true);
+      const saved = await api.upsertMyEmergencyInfo(parseInt(tripId), emergencyFormData);
+      setEmergencyInfos(prev => {
+        const idx = prev.findIndex(x => x.isCurrentUser);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = saved;
+          return updated;
+        }
+        return [...prev, saved];
+      });
+    } catch (err) {
+      alert('Greška pri čuvanju hitnih podataka');
+    } finally {
+      setSavingEmergency(false);
     }
   };
 
@@ -2466,6 +2525,149 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
             </div>
           )}
 
+          {activeTab === 'emergency' && (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-black dark:text-white mb-6">Emergency podaci</h2>
+
+              {/* My Emergency Info Form */}
+              <div className="mb-8 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-5">
+                <h3 className="text-base font-semibold text-red-800 dark:text-red-300 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                  Moji emergency podaci
+                </h3>
+                {!emergencyFormLoaded ? (
+                  <p className="text-zinc-500 dark:text-zinc-400">Učitavam...</p>
+                ) : (
+                  <form onSubmit={handleEmergencySubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-black dark:text-white mb-1">
+                          Kontakt u hitnom slučaju — ime
+                        </label>
+                        <input
+                          type="text"
+                          value={emergencyFormData.emergencyContactName ?? ''}
+                          onChange={(e) => setEmergencyFormData(d => ({ ...d, emergencyContactName: e.target.value }))}
+                          placeholder="Ime i prezime"
+                          maxLength={200}
+                          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-black dark:text-white mb-1">
+                          Kontakt u hitnom slučaju — telefon
+                        </label>
+                        <input
+                          type="tel"
+                          value={emergencyFormData.emergencyContactPhone ?? ''}
+                          onChange={(e) => setEmergencyFormData(d => ({ ...d, emergencyContactPhone: e.target.value }))}
+                          placeholder="+381 60 123 4567"
+                          maxLength={50}
+                          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-black dark:text-white mb-1">
+                          Krvna grupa
+                        </label>
+                        <input
+                          type="text"
+                          value={emergencyFormData.bloodType ?? ''}
+                          onChange={(e) => setEmergencyFormData(d => ({ ...d, bloodType: e.target.value }))}
+                          placeholder="npr. A+, O-, AB+"
+                          maxLength={10}
+                          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-black dark:text-white mb-1">
+                          Broj polise zdravstvenog osiguranja
+                        </label>
+                        <input
+                          type="text"
+                          value={emergencyFormData.healthInsurancePolicyNumber ?? ''}
+                          onChange={(e) => setEmergencyFormData(d => ({ ...d, healthInsurancePolicyNumber: e.target.value }))}
+                          placeholder="Broj polise"
+                          maxLength={100}
+                          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={savingEmergency}
+                        className="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 font-medium"
+                      >
+                        {savingEmergency ? 'Čuvam...' : 'Sačuvaj'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+
+              {/* All Members Emergency Info */}
+              <h3 className="text-base font-semibold text-black dark:text-white mb-3 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Hitni podaci svih članova
+              </h3>
+              {loadingEmergency ? (
+                <p className="text-zinc-500 dark:text-zinc-400">Učitavam...</p>
+              ) : emergencyInfos.length === 0 ? (
+                <p className="text-zinc-500 dark:text-zinc-400">Nema unetih hitnih podataka.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Član</th>
+                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Kontakt (ime)</th>
+                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Kontakt (tel)</th>
+                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Krvna grupa</th>
+                        <th className="text-left py-3 px-3 text-black dark:text-white font-medium">Polisa</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {emergencyInfos.map((info) => (
+                        <tr
+                          key={info.userId}
+                          className={`border-b border-zinc-100 dark:border-zinc-800 ${info.isCurrentUser ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
+                        >
+                          <td className="py-3 px-3 text-black dark:text-white font-medium">
+                            {info.userDisplayName}
+                            {info.isCurrentUser && (
+                              <span className="ml-2 text-xs text-red-600 dark:text-red-400">(ja)</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">{info.emergencyContactName || '—'}</td>
+                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">
+                            {info.emergencyContactPhone ? (
+                              <a href={`tel:${info.emergencyContactPhone}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                                {info.emergencyContactPhone}
+                              </a>
+                            ) : '—'}
+                          </td>
+                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">
+                            {info.bloodType ? (
+                              <span className="inline-block px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-semibold text-xs">
+                                {info.bloodType}
+                              </span>
+                            ) : '—'}
+                          </td>
+                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">{info.healthInsurancePolicyNumber || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'members' && (
             <div className="p-6">
               <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Članovi</h2>
@@ -2662,6 +2864,19 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     <line x1="16" y1="13" x2="8" y2="13"/>
                     <line x1="16" y1="17" x2="8" y2="17"/>
                     <line x1="10" y1="9" x2="8" y2="9"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setActiveTab('emergency')}
+                  title="Emergency podaci"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'emergency'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                   </svg>
                 </button>
               </>
