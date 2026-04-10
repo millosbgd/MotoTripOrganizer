@@ -2890,89 +2890,149 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
 
               {/* Forma */}
               {showEquipmentForm && (
-                <form onSubmit={handleEquipmentSubmit} className="mb-6 bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg space-y-3">
-                  <h3 className="text-sm font-semibold text-black dark:text-white mb-2">
-                    {editingEquipmentEntry ? 'Izmeni unos' : 'Novi unos'}
-                  </h3>
+                <form onSubmit={handleEquipmentSubmit} className="mb-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                  {/* Oprema */}
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Oprema *</label>
-                    <select
-                      required
-                      value={equipmentFormData.equipmentCatalogItemId}
-                      onChange={e => setEquipmentFormData(p => ({ ...p, equipmentCatalogItemId: e.target.value }))}
-                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                    >
-                      <option value="" disabled>— Izaberite opremu —</option>
-                      {Object.entries(
-                        equipmentCatalog.reduce<Record<string, EquipmentCatalogItem[]>>((acc, item) => {
-                          if (!acc[item.category]) acc[item.category] = [];
-                          acc[item.category].push(item);
-                          return acc;
-                        }, {})
-                      ).sort(([a], [b]) => a.localeCompare(b)).map(([cat, items]) => (
-                        <optgroup key={cat} label={cat}>
-                          {items.map(item => (
-                            <option key={item.id} value={item.id}>{item.name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Oprema *</label>
+                      <select
+                        required
+                        value={equipmentFormData.equipmentCatalogItemId}
+                        onChange={e => setEquipmentFormData(p => ({ ...p, equipmentCatalogItemId: e.target.value }))}
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      >
+                        <option value="" disabled>— Izaberite opremu —</option>
+                        {Object.entries(
+                          equipmentCatalog.reduce<Record<string, EquipmentCatalogItem[]>>((acc, item) => {
+                            if (!acc[item.category]) acc[item.category] = [];
+                            acc[item.category].push(item);
+                            return acc;
+                          }, {})
+                        ).sort(([a], [b]) => a.localeCompare(b)).map(([cat, items]) => (
+                          <optgroup key={cat} label={cat}>
+                            {items.map(item => (
+                              <option key={item.id} value={item.id}>{item.name}</option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
 
-                  {/* Ko nosi */}
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Ko nosi *</label>
-                    <select
-                      required
-                      value={equipmentFormData.carriedByUserId}
-                      onChange={e => setEquipmentFormData(p => ({ ...p, carriedByUserId: e.target.value }))}
-                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                    >
-                      <option value="" disabled>— Izaberite člana —</option>
-                      {members.map(m => (
-                        <option key={m.userId} value={m.userId}>
-                          {m.displayName}{m.isCurrentUser ? ' (ja)' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Ko nosi *</label>
+                      <select
+                        required
+                        value={equipmentFormData.carriedByUserId}
+                        onChange={e => setEquipmentFormData(p => ({ ...p, carriedByUserId: e.target.value }))}
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
+                      >
+                        <option value="" disabled>— Izaberite člana —</option>
+                        {members.map(m => (
+                          <option key={m.userId} value={m.userId}>
+                            {m.displayName}{m.isCurrentUser ? ' (ja)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  {/* Količina + Napomena */}
-                  <div className="flex gap-3">
-                    <div className="w-28">
-                      <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Količina</label>
+                    <div>
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Količina</label>
                       <input
                         type="number"
                         min={1}
                         value={equipmentFormData.quantity}
                         onChange={e => setEquipmentFormData(p => ({ ...p, quantity: e.target.value }))}
-                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
                       />
                     </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Napomena</label>
-                      <input
-                        type="text"
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-black dark:text-white mb-1">Napomena</label>
+                      <textarea
                         value={equipmentFormData.note}
                         onChange={e => setEquipmentFormData(p => ({ ...p, note: e.target.value }))}
-                        placeholder="Opciono"
-                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                        rows={3}
+                        placeholder="Dodatne informacije..."
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-black dark:text-white"
                       />
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEquipmentForm(false);
+                        setEditingEquipmentEntry(null);
+                        setEquipmentFormData({ equipmentCatalogItemId: '', carriedByUserId: '', quantity: '1', note: '' });
+                      }}
+                      className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      Otkaži
+                    </button>
                     <button
                       type="submit"
                       disabled={savingEquipment}
-                      className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm disabled:opacity-50"
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     >
                       {savingEquipment ? 'Čuvam...' : editingEquipmentEntry ? 'Sačuvaj' : 'Dodaj'}
                     </button>
                   </div>
                 </form>
+              )}
+
+              {/* Lista */}
+              {!showEquipmentForm && (
+                <div>
+                  {loadingEquipment ? (
+                    <p className="text-zinc-600 dark:text-zinc-400 text-sm">Učitavam...</p>
+                  ) : equipmentEntries.length === 0 ? (
+                    <div className="text-center py-10 text-zinc-500 dark:text-zinc-400">
+                      <div className="text-4xl mb-3">🎒</div>
+                      <p className="text-sm">Nema unesene opreme</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {Object.entries(
+                        equipmentEntries.reduce<Record<string, TripEquipmentEntry[]>>((acc, e) => {
+                          if (!acc[e.equipmentCategory]) acc[e.equipmentCategory] = [];
+                          acc[e.equipmentCategory].push(e);
+                          return acc;
+                        }, {})
+                      ).sort(([a], [b]) => a.localeCompare(b)).map(([category, entries]) => (
+                        <div key={category}>
+                          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">{category}</p>
+                          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 divide-y divide-zinc-100 dark:divide-zinc-800">
+                            {entries.map(entry => (
+                              <div key={entry.id} className="flex items-center justify-between px-4 py-3">
+                                <div>
+                                  <span className="text-sm font-medium text-black dark:text-white">{entry.equipmentName}</span>
+                                  {entry.quantity > 1 && <span className="ml-2 text-xs text-zinc-500">× {entry.quantity}</span>}
+                                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">👤 {entry.carriedByDisplayName}</div>
+                                  {entry.note && <div className="text-xs text-zinc-400 italic mt-0.5">{entry.note}</div>}
+                                </div>
+                                <div className="flex gap-3 ml-4 flex-shrink-0">
+                                  <button
+                                    onClick={() => openEquipmentEdit(entry)}
+                                    className="text-xs text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+                                  >
+                                    Izmeni
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteEquipmentEntry(entry.id)}
+                                    className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                                  >
+                                    Obriši
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Floating Action Button */}
@@ -2990,56 +3050,6 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </button>
-              )}
-
-              {/* Lista unosa */}
-              {loadingEquipment ? (
-                <p className="text-zinc-600 dark:text-zinc-400 text-sm">Učitavam...</p>
-              ) : equipmentEntries.length === 0 ? (
-                <div className="text-center py-10 text-zinc-500 dark:text-zinc-400">
-                  <div className="text-4xl mb-3">🎒</div>
-                  <p className="text-sm">Nema unesene opreme</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(
-                    equipmentEntries.reduce<Record<string, TripEquipmentEntry[]>>((acc, e) => {
-                      if (!acc[e.equipmentCategory]) acc[e.equipmentCategory] = [];
-                      acc[e.equipmentCategory].push(e);
-                      return acc;
-                    }, {})
-                  ).sort(([a], [b]) => a.localeCompare(b)).map(([category, entries]) => (
-                    <div key={category}>
-                      <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">{category}</p>
-                      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 divide-y divide-zinc-100 dark:divide-zinc-800">
-                        {entries.map(entry => (
-                          <div key={entry.id} className="flex items-center justify-between px-4 py-3">
-                            <div>
-                              <span className="text-sm font-medium text-black dark:text-white">{entry.equipmentName}</span>
-                              {entry.quantity > 1 && <span className="ml-2 text-xs text-zinc-500">× {entry.quantity}</span>}
-                              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">👤 {entry.carriedByDisplayName}</div>
-                              {entry.note && <div className="text-xs text-zinc-400 italic mt-0.5">{entry.note}</div>}
-                            </div>
-                            <div className="flex gap-3 ml-4 flex-shrink-0">
-                              <button
-                                onClick={() => openEquipmentEdit(entry)}
-                                className="text-xs text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
-                              >
-                                Izmeni
-                              </button>
-                              <button
-                                onClick={() => handleDeleteEquipmentEntry(entry.id)}
-                                className="text-xs text-red-500 hover:text-red-700 transition-colors"
-                              >
-                                Obriši
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               )}
             </div>
           )}
