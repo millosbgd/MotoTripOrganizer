@@ -2866,19 +2866,26 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
           )}
           {/* ── OPREMA TAB ── */}
           {activeTab === 'equipment' && (
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-black dark:text-white">Oprema</h2>
-                <button
-                  onClick={() => {
-                    setEditingEquipmentEntry(null);
-                    setEquipmentFormData({ equipmentCatalogItemId: '', carriedByUserId: '', quantity: '1', note: '' });
-                    setShowEquipmentForm(true);
-                  }}
-                  className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm"
-                >
-                  + Dodaj
-                </button>
+            <div className="p-6 relative">
+              <div className="flex items-center mb-4">
+                {showEquipmentForm && (
+                  <button
+                    onClick={() => {
+                      setShowEquipmentForm(false);
+                      setEditingEquipmentEntry(null);
+                      setEquipmentFormData({ equipmentCatalogItemId: '', carriedByUserId: '', quantity: '1', note: '' });
+                    }}
+                    className="mr-3 text-black dark:text-white hover:text-zinc-600 dark:hover:text-zinc-400"
+                    title="Nazad"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
+                <h2 className="text-xl font-semibold text-black dark:text-white">
+                  {showEquipmentForm ? (editingEquipmentEntry ? 'Izmeni opremu' : 'Dodaj opremu') : 'Oprema'}
+                </h2>
               </div>
 
               {/* Forma */}
@@ -2964,15 +2971,25 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     >
                       {savingEquipment ? 'Čuvam...' : editingEquipmentEntry ? 'Sačuvaj' : 'Dodaj'}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => { setShowEquipmentForm(false); setEditingEquipmentEntry(null); }}
-                      className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm"
-                    >
-                      Otkaži
-                    </button>
                   </div>
                 </form>
+              )}
+
+              {/* Floating Action Button */}
+              {!showEquipmentForm && (
+                <button
+                  onClick={() => {
+                    setEditingEquipmentEntry(null);
+                    setEquipmentFormData({ equipmentCatalogItemId: '', carriedByUserId: '', quantity: '1', note: '' });
+                    setShowEquipmentForm(true);
+                  }}
+                  className="fixed bottom-20 right-8 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center z-50"
+                  title="Dodaj opremu"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
               )}
 
               {/* Lista unosa */}
