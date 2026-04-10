@@ -135,6 +135,35 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     });
   }, []);
 
+  // Reload tab data whenever the active tab changes
+  useEffect(() => {
+    if (!tripId) return;
+    switch (activeTab) {
+      case 'sharedExpenses':
+      case 'personalExpenses':
+        loadExpenses(tripId);
+        break;
+      case 'fuel':
+        loadFuelEntries(tripId);
+        break;
+      case 'accommodation':
+        loadAccommodationEntries(tripId);
+        break;
+      case 'service':
+        loadServiceEntries(tripId);
+        break;
+      case 'notes':
+        loadNoteEntries(tripId);
+        break;
+      case 'emergency':
+        loadEmergencyInfos(tripId);
+        break;
+      case 'equipment':
+        loadEquipmentData(tripId);
+        break;
+    }
+  }, [activeTab, tripId]);
+
   const loadTrip = async (id: string) => {
     try {
       setLoading(true);
