@@ -875,9 +875,12 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         <div className="mb-8 flex items-center justify-between">
           <Link
             href="/trips"
-            className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+            className="flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
           >
-            ◀
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Svi tripovi
           </Link>
           <h1 className="text-lg font-semibold text-black dark:text-white">{trip.name}</h1>
         </div>
