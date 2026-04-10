@@ -391,6 +391,21 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         await api.updateFuelEntry(parseInt(tripId), editingFuelId, fuelData);
       } else {
         await api.createFuelEntry(parseInt(tripId), fuelData);
+        const wantsExpense = window.confirm('Da li želite da unesete trošak za ovo sipanje goriva?');
+        if (wantsExpense) {
+          const currentUser = members.find(m => m.isCurrentUser);
+          if (currentUser) {
+            await api.createExpense(parseInt(tripId), {
+              date: fuelFormData.date,
+              category: 'Gorivo',
+              description: fuelFormData.location ? `Gorivo - ${fuelFormData.location}` : 'Gorivo',
+              amount: parseFloat(fuelFormData.amount),
+              currency: fuelFormData.currency,
+              isShared: false,
+              paidByUserId: currentUser.userId,
+            });
+          }
+        }
       }
 
       setShowFuelForm(false);
