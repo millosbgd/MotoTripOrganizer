@@ -4,10 +4,12 @@ import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry, NoteEntry, EmergencyInfo, UpsertEmergencyInfoDto, EquipmentCatalogItem, TripEquipmentEntry, CreateTripEquipmentEntryDto, UpdateTripEquipmentEntryDto } from '@/lib/api';
+import { useConfirm } from '@/hooks/useConfirm';
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [members, setMembers] = useState<TripMember[]>([]);
@@ -316,7 +318,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleDeleteEquipmentEntry = async (entryId: number) => {
-    if (!tripId || !confirm('Obrisati ovaj unos?')) return;
+    if (!tripId || !await confirm('Obrisati ovaj unos opreme?', { danger: true, confirmLabel: 'Obriši' })) return;
     try {
       await api.deleteEquipmentEntry(parseInt(tripId), entryId);
       loadEquipmentData(tripId);
@@ -359,7 +361,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleDeleteExpense = async (expenseId: number) => {
-    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovaj trošak?')) {
+    if (!tripId || !await confirm('Da li si siguran da želiš da obrišeš ovaj trošak?', { danger: true, confirmLabel: 'Obriši' })) {
       return;
     }
 
@@ -388,7 +390,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleRemoveMember = async (userId: number) => {
-    if (!tripId || !confirm('Da li si siguran da želiš da ukloniš ovog člana?')) {
+    if (!tripId || !await confirm('Da li si siguran da želiš da ukloniš ovog člana?', { danger: true, confirmLabel: 'Ukloni' })) {
       return;
     }
 
@@ -420,7 +422,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         await api.updateFuelEntry(parseInt(tripId), editingFuelId, fuelData);
       } else {
         await api.createFuelEntry(parseInt(tripId), fuelData);
-        const wantsExpense = window.confirm('Da li želite da unesete trošak za ovo sipanje goriva?');
+        const wantsExpense = await confirm('Da li želite da unesete trošak za ovo sipanje goriva?', { confirmLabel: 'Da', cancelLabel: 'Ne' });
         if (wantsExpense) {
           const currentUser = members.find(m => m.isCurrentUser);
           if (currentUser) {
@@ -471,7 +473,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleDeleteFuel = async (fuelId: number) => {
-    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovo sipanje?')) {
+    if (!tripId || !await confirm('Da li si siguran da želiš da obrišeš ovo sipanje?', { danger: true, confirmLabel: 'Obriši' })) {
       return;
     }
 
@@ -542,7 +544,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleDeleteAccommodation = async (accommodationId: number) => {
-    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovaj smeštaj?')) {
+    if (!tripId || !await confirm('Da li si siguran da želiš da obrišeš ovaj smeštaj?', { danger: true, confirmLabel: 'Obriši' })) {
       return;
     }
 
@@ -610,7 +612,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleDeleteService = async (serviceId: number) => {
-    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovaj servis?')) {
+    if (!tripId || !await confirm('Da li si siguran da želiš da obrišeš ovaj servis?', { danger: true, confirmLabel: 'Obriši' })) {
       return;
     }
 
@@ -660,7 +662,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   };;
 
   const handleDeleteNote = async (noteId: number) => {
-    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovu belešku?')) {
+    if (!tripId || !await confirm('Da li si siguran da želiš da obrišeš ovu belešku?', { danger: true, confirmLabel: 'Obriši' })) {
       return;
     }
 
@@ -913,6 +915,8 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
+    <>
+    {ConfirmDialogComponent}
     <div className="min-h-screen bg-zinc-50 dark:bg-black pb-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -3276,6 +3280,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         </div>
       </div>
     </div>
+    </>
   );
 }
 

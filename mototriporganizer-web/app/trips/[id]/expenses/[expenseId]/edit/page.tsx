@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, Expense, TripMember } from '@/lib/api';
+import { useConfirm } from '@/hooks/useConfirm';
 
 interface PageParams {
   id: string;
@@ -12,6 +13,7 @@ interface PageParams {
 
 export default function EditExpensePage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter();
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [expense, setExpense] = useState<Expense | null>(null);
   const [members, setMembers] = useState<TripMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +88,7 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
   };
 
   const handleDelete = async () => {
-    if (!tripId || !expenseId || !confirm('Da li si siguran da želiš da obrišeš ovaj trošak?')) {
+    if (!tripId || !expenseId || !await confirm('Da li si siguran da želiš da obrišeš ovaj trošak?', { danger: true, confirmLabel: 'Obriši' })) {
       return;
     }
 
@@ -130,6 +132,8 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
 
 
   return (
+    <>
+    {ConfirmDialogComponent}
     <div className="min-h-screen bg-white dark:bg-black">
       <div className="max-w-2xl mx-auto p-6">
         {/* Header */}
@@ -295,5 +299,6 @@ export default function EditExpensePage({ params }: { params: Promise<PageParams
         </form>
       </div>
     </div>
+    </>
   );
 }

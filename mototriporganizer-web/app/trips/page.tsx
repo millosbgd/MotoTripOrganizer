@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { api, Trip } from '@/lib/api';
+import { useConfirm } from '@/hooks/useConfirm';
 
 export default function TripsPage() {
   const { user } = useAuth();
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export default function TripsPage() {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!confirm('Da li si siguran da želiš da obrišeš ovaj trip?')) {
+    if (!await confirm('Da li si siguran da želiš da obrišeš ovaj trip?', { danger: true, confirmLabel: 'Obriši' })) {
       return;
     }
 
@@ -74,6 +76,8 @@ export default function TripsPage() {
   }
 
   return (
+    <>
+    {ConfirmDialogComponent}
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
       {/* Header */}
       <header className="bg-[#141414] border-b-2 border-red-600">
@@ -218,5 +222,6 @@ export default function TripsPage() {
         </svg>
       </Link>
     </div>
+    </>
   );
 }

@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, Trip, TripMember, EquipmentCatalogItem, TripEquipmentEntry } from '@/lib/api';
+import { useConfirm } from '@/hooks/useConfirm';
 
 type Tab = 'info' | 'equipment';
 
 export default function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { confirm, ConfirmDialogComponent } = useConfirm();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   const handleDelete = async () => {
-    if (!tripId || !confirm('Da li si siguran da želiš da obrišeš ovaj trip?')) return;
+    if (!tripId || !await confirm('Da li si siguran da želiš da obrišeš ovaj trip?', { danger: true, confirmLabel: 'Obriši' })) return;
     try {
       setDeleting(true);
       await api.deleteTrip(parseInt(tripId));
@@ -109,7 +111,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   const handleDeleteEquipmentEntry = async (entryId: number) => {
-    if (!tripId || !confirm('Obrisati ovaj unos?')) return;
+    if (!tripId || !await confirm('Obrisati ovaj unos opreme?', { danger: true, confirmLabel: 'Obriši' })) return;
     try {
       await api.deleteEquipmentEntry(parseInt(tripId), entryId);
       loadEquipmentData(tripId);
@@ -176,6 +178,8 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
+    <>
+    {ConfirmDialogComponent}
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
@@ -451,5 +455,6 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
     </div>
+    </>
   );
 }
