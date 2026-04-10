@@ -670,6 +670,93 @@ namespace MotoTripOrganizer.Infrastructure.Migrations
                     b.ToTable("TripMembers", (string)null);
                 });
 
+            modelBuilder.Entity("MotoTripOrganizer.Domain.Entities.EquipmentCatalogItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("EquipmentCatalogItems", (string)null);
+                });
+
+            modelBuilder.Entity("MotoTripOrganizer.Domain.Entities.TripEquipmentEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("TripId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EquipmentCatalogItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CarriedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.HasIndex("EquipmentCatalogItemId");
+
+                    b.HasIndex("CarriedByUserId");
+
+                    b.ToTable("TripEquipmentEntries", (string)null);
+                });
+
             modelBuilder.Entity("MotoTripOrganizer.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -965,6 +1052,31 @@ namespace MotoTripOrganizer.Infrastructure.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Stages");
+                });
+
+            modelBuilder.Entity("MotoTripOrganizer.Domain.Entities.TripEquipmentEntry", b =>
+                {
+                    b.HasOne("MotoTripOrganizer.Domain.Entities.Trip", "Trip")
+                        .WithMany()
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MotoTripOrganizer.Domain.Entities.EquipmentCatalogItem", "EquipmentCatalogItem")
+                        .WithMany("TripEquipmentEntries")
+                        .HasForeignKey("EquipmentCatalogItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MotoTripOrganizer.Domain.Entities.User", "CarriedByUser")
+                        .WithMany()
+                        .HasForeignKey("CarriedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Trip");
+                    b.Navigation("EquipmentCatalogItem");
+                    b.Navigation("CarriedByUser");
                 });
 
             modelBuilder.Entity("MotoTripOrganizer.Domain.Entities.User", b =>

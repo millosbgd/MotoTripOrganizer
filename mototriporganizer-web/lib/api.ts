@@ -217,6 +217,42 @@ export interface UpsertEmergencyInfoDto {
   healthInsurancePolicyNumber?: string;
 }
 
+export interface EquipmentCatalogItem {
+  id: number;
+  name: string;
+  description?: string;
+  category: string;
+}
+
+export interface TripEquipmentEntry {
+  id: number;
+  tripId: number;
+  equipmentCatalogItemId: number;
+  equipmentName: string;
+  equipmentCategory: string;
+  carriedByUserId: number;
+  carriedByDisplayName: string;
+  quantity: number;
+  note?: string;
+  createdByUserId: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateTripEquipmentEntryDto {
+  equipmentCatalogItemId: number;
+  carriedByUserId: number;
+  quantity: number;
+  note?: string;
+}
+
+export interface UpdateTripEquipmentEntryDto {
+  equipmentCatalogItemId: number;
+  carriedByUserId: number;
+  quantity: number;
+  note?: string;
+}
+
 // Helper to get auth token
 async function getAuthToken(): Promise<string | null> {
   try {
@@ -712,5 +748,72 @@ export const api = {
     }
 
     return response.json();
+  },
+
+  // Equipment Catalog
+  async getEquipmentCatalog(): Promise<EquipmentCatalogItem[]> {
+    const response = await fetch(`${API_URL}/api/equipment-catalog`, {
+      headers: await buildHeaders(),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch equipment catalog: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  // Trip Equipment Entries
+  async getEquipmentEntries(tripId: number): Promise<TripEquipmentEntry[]> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/equipment-entries`, {
+      headers: await buildHeaders(),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch equipment entries: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async createEquipmentEntry(tripId: number, data: CreateTripEquipmentEntryDto): Promise<TripEquipmentEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/equipment-entries`, {
+      method: 'POST',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create equipment entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async updateEquipmentEntry(tripId: number, id: number, data: UpdateTripEquipmentEntryDto): Promise<TripEquipmentEntry> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/equipment-entries/${id}`, {
+      method: 'PUT',
+      headers: await buildHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update equipment entry: ${response.statusText}`);
+    }
+
+    return response.json();
+  },
+
+  async deleteEquipmentEntry(tripId: number, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}/equipment-entries/${id}`, {
+      method: 'DELETE',
+      headers: await buildHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete equipment entry: ${response.statusText}`);
+    }
   },
 };

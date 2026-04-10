@@ -22,6 +22,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<NoteEntry> NoteEntries { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<EmergencyInfo> EmergencyInfos { get; set; }
+    public DbSet<EquipmentCatalogItem> EquipmentCatalogItems { get; set; }
+    public DbSet<TripEquipmentEntry> TripEquipmentEntries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

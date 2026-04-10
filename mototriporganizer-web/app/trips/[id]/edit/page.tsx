@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry, NoteEntry, EmergencyInfo, UpsertEmergencyInfoDto } from '@/lib/api';
+import { api, Trip, Expense, TripMember, FuelEntry, AccommodationEntry, ServiceEntry, NoteEntry, EmergencyInfo, UpsertEmergencyInfoDto, EquipmentCatalogItem, TripEquipmentEntry, CreateTripEquipmentEntryDto, UpdateTripEquipmentEntryDto } from '@/lib/api';
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -93,7 +93,21 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
   });
   const [emergencyFormLoaded, setEmergencyFormLoaded] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members' | 'emergency'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'sharedExpenses' | 'personalExpenses' | 'fuel' | 'accommodation' | 'service' | 'notes' | 'members' | 'emergency' | 'equipment'>('general');
+
+  // Equipment state
+  const [equipmentEntries, setEquipmentEntries] = useState<TripEquipmentEntry[]>([]);
+  const [equipmentCatalog, setEquipmentCatalog] = useState<EquipmentCatalogItem[]>([]);
+  const [loadingEquipment, setLoadingEquipment] = useState(false);
+  const [showEquipmentForm, setShowEquipmentForm] = useState(false);
+  const [editingEquipmentEntry, setEditingEquipmentEntry] = useState<TripEquipmentEntry | null>(null);
+  const [equipmentFormData, setEquipmentFormData] = useState<{ equipmentCatalogItemId: string; carriedByUserId: string; quantity: string; note: string }>({
+    equipmentCatalogItemId: '',
+    carriedByUserId: '',
+    quantity: '1',
+    note: '',
+  });
+  const [savingEquipment, setSavingEquipment] = useState(false);
   const [isEditMode, setIsEditMode] = useState(true); // true = from edit icon (show only Info & Members), false = from region click (show all except Info & Members)
 
   useEffect(() => {
@@ -116,6 +130,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         loadServiceEntries(p.id);
         loadNoteEntries(p.id);
         loadEmergencyInfos(p.id);
+        loadEquipmentData(p.id);
       }
     });
   }, []);
@@ -226,6 +241,70 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     } finally {
       setLoadingEmergency(false);
     }
+  };
+
+  const loadEquipmentData = async (id: string) => {
+    try {
+      setLoadingEquipment(true);
+      const [entries, catalog] = await Promise.all([
+        api.getEquipmentEntries(parseInt(id)),
+        api.getEquipmentCatalog(),
+      ]);
+      setEquipmentEntries(entries);
+      setEquipmentCatalog(catalog);
+    } catch (err) {
+      console.error('Failed to load equipment data:', err);
+    } finally {
+      setLoadingEquipment(false);
+    }
+  };
+
+  const handleEquipmentSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!tripId) return;
+    setSavingEquipment(true);
+    try {
+      const payload = {
+        equipmentCatalogItemId: parseInt(equipmentFormData.equipmentCatalogItemId),
+        carriedByUserId: parseInt(equipmentFormData.carriedByUserId),
+        quantity: parseInt(equipmentFormData.quantity) || 1,
+        note: equipmentFormData.note || undefined,
+      };
+      if (editingEquipmentEntry) {
+        await api.updateEquipmentEntry(parseInt(tripId), editingEquipmentEntry.id, payload);
+      } else {
+        await api.createEquipmentEntry(parseInt(tripId), payload);
+      }
+      setShowEquipmentForm(false);
+      setEditingEquipmentEntry(null);
+      setEquipmentFormData({ equipmentCatalogItemId: '', carriedByUserId: '', quantity: '1', note: '' });
+      loadEquipmentData(tripId);
+    } catch (err) {
+      console.error('Failed to save equipment entry:', err);
+    } finally {
+      setSavingEquipment(false);
+    }
+  };
+
+  const handleDeleteEquipmentEntry = async (entryId: number) => {
+    if (!tripId || !confirm('Obrisati ovaj unos?')) return;
+    try {
+      await api.deleteEquipmentEntry(parseInt(tripId), entryId);
+      loadEquipmentData(tripId);
+    } catch (err) {
+      console.error('Failed to delete equipment entry:', err);
+    }
+  };
+
+  const openEquipmentEdit = (entry: TripEquipmentEntry) => {
+    setEditingEquipmentEntry(entry);
+    setEquipmentFormData({
+      equipmentCatalogItemId: String(entry.equipmentCatalogItemId),
+      carriedByUserId: String(entry.carriedByUserId),
+      quantity: String(entry.quantity),
+      note: entry.note ?? '',
+    });
+    setShowEquipmentForm(true);
   };
 
   const handleEmergencySubmit = async (e: FormEvent) => {
@@ -2785,6 +2864,169 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
               )}
             </div>
           )}
+          {/* ── OPREMA TAB ── */}
+          {activeTab === 'equipment' && (
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-black dark:text-white">Oprema</h2>
+                <button
+                  onClick={() => {
+                    setEditingEquipmentEntry(null);
+                    setEquipmentFormData({ equipmentCatalogItemId: '', carriedByUserId: '', quantity: '1', note: '' });
+                    setShowEquipmentForm(true);
+                  }}
+                  className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm"
+                >
+                  + Dodaj
+                </button>
+              </div>
+
+              {/* Forma */}
+              {showEquipmentForm && (
+                <form onSubmit={handleEquipmentSubmit} className="mb-6 bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg space-y-3">
+                  <h3 className="text-sm font-semibold text-black dark:text-white mb-2">
+                    {editingEquipmentEntry ? 'Izmeni unos' : 'Novi unos'}
+                  </h3>
+
+                  {/* Oprema */}
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Oprema *</label>
+                    <select
+                      required
+                      value={equipmentFormData.equipmentCatalogItemId}
+                      onChange={e => setEquipmentFormData(p => ({ ...p, equipmentCatalogItemId: e.target.value }))}
+                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    >
+                      <option value="" disabled>— Izaberite opremu —</option>
+                      {Object.entries(
+                        equipmentCatalog.reduce<Record<string, EquipmentCatalogItem[]>>((acc, item) => {
+                          if (!acc[item.category]) acc[item.category] = [];
+                          acc[item.category].push(item);
+                          return acc;
+                        }, {})
+                      ).sort(([a], [b]) => a.localeCompare(b)).map(([cat, items]) => (
+                        <optgroup key={cat} label={cat}>
+                          {items.map(item => (
+                            <option key={item.id} value={item.id}>{item.name}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Ko nosi */}
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Ko nosi *</label>
+                    <select
+                      required
+                      value={equipmentFormData.carriedByUserId}
+                      onChange={e => setEquipmentFormData(p => ({ ...p, carriedByUserId: e.target.value }))}
+                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                    >
+                      <option value="" disabled>— Izaberite člana —</option>
+                      {members.map(m => (
+                        <option key={m.userId} value={m.userId}>
+                          {m.displayName}{m.isCurrentUser ? ' (ja)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Količina + Napomena */}
+                  <div className="flex gap-3">
+                    <div className="w-28">
+                      <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Količina</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={equipmentFormData.quantity}
+                        onChange={e => setEquipmentFormData(p => ({ ...p, quantity: e.target.value }))}
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Napomena</label>
+                      <input
+                        type="text"
+                        value={equipmentFormData.note}
+                        onChange={e => setEquipmentFormData(p => ({ ...p, note: e.target.value }))}
+                        placeholder="Opciono"
+                        className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="submit"
+                      disabled={savingEquipment}
+                      className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-sm disabled:opacity-50"
+                    >
+                      {savingEquipment ? 'Čuvam...' : editingEquipmentEntry ? 'Sačuvaj' : 'Dodaj'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowEquipmentForm(false); setEditingEquipmentEntry(null); }}
+                      className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm"
+                    >
+                      Otkaži
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Lista unosa */}
+              {loadingEquipment ? (
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm">Učitavam...</p>
+              ) : equipmentEntries.length === 0 ? (
+                <div className="text-center py-10 text-zinc-500 dark:text-zinc-400">
+                  <div className="text-4xl mb-3">🎒</div>
+                  <p className="text-sm">Nema unesene opreme</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {Object.entries(
+                    equipmentEntries.reduce<Record<string, TripEquipmentEntry[]>>((acc, e) => {
+                      if (!acc[e.equipmentCategory]) acc[e.equipmentCategory] = [];
+                      acc[e.equipmentCategory].push(e);
+                      return acc;
+                    }, {})
+                  ).sort(([a], [b]) => a.localeCompare(b)).map(([category, entries]) => (
+                    <div key={category}>
+                      <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">{category}</p>
+                      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 divide-y divide-zinc-100 dark:divide-zinc-800">
+                        {entries.map(entry => (
+                          <div key={entry.id} className="flex items-center justify-between px-4 py-3">
+                            <div>
+                              <span className="text-sm font-medium text-black dark:text-white">{entry.equipmentName}</span>
+                              {entry.quantity > 1 && <span className="ml-2 text-xs text-zinc-500">× {entry.quantity}</span>}
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">👤 {entry.carriedByDisplayName}</div>
+                              {entry.note && <div className="text-xs text-zinc-400 italic mt-0.5">{entry.note}</div>}
+                            </div>
+                            <div className="flex gap-3 ml-4 flex-shrink-0">
+                              <button
+                                onClick={() => openEquipmentEdit(entry)}
+                                className="text-xs text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+                              >
+                                Izmeni
+                              </button>
+                              <button
+                                onClick={() => handleDeleteEquipmentEntry(entry.id)}
+                                className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                              >
+                                Obriši
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       </div>
 
@@ -2914,6 +3156,21 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
                     <line x1="16" y1="13" x2="8" y2="13"/>
                     <line x1="16" y1="17" x2="8" y2="17"/>
                     <line x1="10" y1="9" x2="8" y2="9"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setActiveTab('equipment')}
+                  title="Oprema"
+                  className={`flex-1 py-4 px-3 transition-colors border-b-2 ${
+                    activeTab === 'equipment'
+                      ? 'border-black dark:border-white text-black dark:text-white'
+                      : 'border-transparent text-zinc-400 dark:text-zinc-600 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <svg className="w-6 h-6 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
                   </svg>
                 </button>
               </>
